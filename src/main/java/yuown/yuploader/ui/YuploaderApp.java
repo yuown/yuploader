@@ -102,5 +102,4 @@ public class YuploaderApp {
 	protected void launchUploadFiles(ActionEvent e) {
 		desktopPane.add(uploadFilesFrame);
 	}
-
 }
