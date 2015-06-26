@@ -1,0 +1,20 @@
+CREATE TABLE `users` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `uname` varchar(45) NOT NULL,
+  `passwd` varchar(45) DEFAULT NULL,
+  `enabled` tinyint(1) DEFAULT NULL,
+  `user_type` varchar(45) DEFAULT NULL,
+  `mobile_number` varchar(12) DEFAULT NULL,
+  `alternate_numer` varchar(15) DEFAULT NULL,
+  `email` varchar(60) DEFAULT NULL,
+  `studio_name` varchar(80) DEFAULT NULL,
+  `full_name` varchar(60) DEFAULT NULL,
+  `address` varchar(100) DEFAULT NULL,
+  `city` varchar(45) DEFAULT NULL,
+  `state` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uname_UNIQUE` (`uname`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1$$
+
+'1', 'user1', 'pass1', '1', 'user', '1', '1', 'a@b.com', 'Abc', 'Abc Xyz', 'Address', 'City', 'State'
+'2', 'user2', 'pass2', '0', 'user', '2', '2', 'c@d.com', 'Sdf', 'Sdf Qwe', 'Address', 'City', 'State'
