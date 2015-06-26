@@ -13,6 +13,7 @@
 		<jdbc.version>4.1.6.RELEASE</jdbc.version>
 		<ftp.version>4.1.5.RELEASE</ftp.version>
 		<dbcp.version>2.1</dbcp.version>
+		<commons.lang3.version>3.4</commons.lang3.version>
 		<mysql.version>5.1.35</mysql.version>
 	</properties>
 	<dependencies>
@@ -41,6 +42,11 @@
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-dbcp2</artifactId>
 			<version>${dbcp.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>${commons.lang3.version}</version>
 		</dependency>
 
 		<dependency>

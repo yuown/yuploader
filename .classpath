@@ -17,23 +17,11 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry excluding="**" kind="src" output="target/test-classes" path="src/test/resources">
-		<attributes>
-			<attribute name="maven.pomderived" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/J2SE-1.5">
-		<attributes>
-			<attribute name="maven.pomderived" value="true"/>
-		</attributes>
-	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
 		<attributes>
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/Volumes/Yenkay1/Data/D9t/Tools/eclipse/plugins/org.eclipse.core.databinding_1.4.1.v20140214-0004.jar" sourcepath="/Volumes/Yenkay1/Data/D9t/Tools/eclipse/plugins/org.eclipse.core.databinding_1.4.1.v20140214-0004.jar"/>
-	<classpathentry kind="lib" path="/Volumes/Yenkay1/Data/D9t/Tools/eclipse/plugins/org.eclipse.core.databinding.observable_1.4.1.v20140210-1835.jar" sourcepath="/Volumes/Yenkay1/Data/D9t/Tools/eclipse/plugins/org.eclipse.core.databinding.observable_1.4.1.v20140210-1835.jar"/>
-	<classpathentry kind="lib" path="/Volumes/Yenkay1/Data/D9t/Tools/eclipse/plugins/org.eclipse.jface.databinding_1.6.200.v20140528-1422.jar" sourcepath="/Volumes/Yenkay1/Data/D9t/Tools/eclipse/plugins/org.eclipse.jface.databinding_1.6.200.v20140528-1422.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.8.0_05"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

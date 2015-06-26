@@ -1,42 +1,33 @@
 package yuown.yuploader.ui;
 
-import java.awt.EventQueue;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
-import javax.swing.JFrame;
-import javax.swing.JInternalFrame;
-import javax.swing.JMenuBar;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
+import yuown.yuploader.ftp.FTPHelperBean;
 
-import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.awt.FlowLayout;
+import java.awt.event.ActionListener;
 
 import javax.swing.JDesktopPane;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 
 public class YuploaderApp {
+    
+    @Value("${yuploader.app.title}")
+    private String appTitle;
 
 	private JFrame frame;
 	
-	private JDesktopPane desktopPane;
+    private JDesktopPane desktopPane;
 	
-	private Upload uploadFilesFrame;
-
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					YuploaderApp window = new YuploaderApp();
-					window.frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
+    @Autowired
+	private UploadWindow uploadWindow;
+	
+	@Autowired
+	private FTPHelperBean ftpHelperBean;
 
 	/**
 	 * Create the application.
@@ -82,24 +73,17 @@ public class YuploaderApp {
 		
 		desktopPane = new JDesktopPane();
 		frame.add(desktopPane);
-		
-		createInternalWindows();
-	}
-
-	private void createInternalWindows() {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					uploadFilesFrame = new Upload("Upload Files", true, true, true, true);
-					uploadFilesFrame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
 	}
 
 	protected void launchUploadFiles(ActionEvent e) {
-		desktopPane.add(uploadFilesFrame);
+	    if(!uploadWindow.isVisible()) {
+    	    uploadWindow.setVisible(true);
+    		desktopPane.add(uploadWindow);
+	    }
 	}
+	
+	public JFrame getFrame() {
+	    frame.setTitle(appTitle);
+        return frame;
+    }
 }

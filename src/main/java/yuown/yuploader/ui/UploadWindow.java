@@ -1,39 +1,20 @@
 package yuown.yuploader.ui;
 
-import java.awt.EventQueue;
+import org.springframework.stereotype.Component;
 
 import javax.swing.JButton;
 import javax.swing.JInternalFrame;
 import javax.swing.JScrollPane;
 import javax.swing.SpringLayout;
 
-public class Upload extends JInternalFrame {
+@Component
+public class UploadWindow extends JInternalFrame {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -7925476333709078140L;
 
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					Upload frame = new Upload();
-					frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
-
-	private Upload() {
-		defaultConstructor();
-	}
-	
 	/**
 	 * Create the frame.
 	 */
@@ -60,7 +41,7 @@ public class Upload extends JInternalFrame {
 		getContentPane().add(scrollPane);
 	}
 	
-	public Upload(String title,
+	public UploadWindow(String title,
                       boolean resizable,
                       boolean closable,
                       boolean maximizable,

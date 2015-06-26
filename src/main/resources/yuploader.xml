@@ -8,9 +8,19 @@
                 http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
 	<context:property-placeholder location="yuploader.properties" />
-	<context:component-scan base-package="yuown.yuploader"></context:component-scan>
+	<context:component-scan base-package="yuown.yuploader" use-default-filters="true" />
 
-	<bean id="uploader" class="yuown.yuploader.Uploader"></bean>
+	<bean id="ftpHelperBean" class="yuown.yuploader.ftp.FTPHelperBean"></bean>
+	<bean id="applicationDesktop" class="yuown.yuploader.ui.YuploaderApp"></bean>
+	<bean id="helper" class="yuown.yuploader.util.Helper"></bean>
+	
+	<bean id="uploadWindow" class="yuown.yuploader.ui.UploadWindow">
+	   <constructor-arg name="title" value="Upload Files"></constructor-arg>
+	   <constructor-arg name="resizable" value="true"></constructor-arg>
+	   <constructor-arg name="closable" value="true"></constructor-arg>
+	   <constructor-arg name="maximizable" value="true"></constructor-arg>
+	   <constructor-arg name="iconifiable" value="true"></constructor-arg>
+	</bean>
 
 	<bean id="yuploaderDs" class="org.apache.commons.dbcp2.BasicDataSource">
 		<property name="driverClassName" value="${db.conn.driver}" />
@@ -21,18 +31,15 @@
 	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
 		<constructor-arg name="dataSource" ref="yuploaderDs"></constructor-arg>
 	</bean>
-	<bean id="ftpClientFactory"
-		class="org.springframework.integration.ftp.session.DefaultFtpSessionFactory">
-		<property name="host" value="localhost" />
+	<bean id="ftpClientFactory" class="org.springframework.integration.ftp.session.DefaultFtpSessionFactory">
+		<property name="host" value="${ftp.conn.host}" />
 		<property name="port" value="21" />
-		<property name="username" value="u" />
-		<property name="password" value="p" />
+		<property name="username" value="${ftp.conn.user}" />
+		<property name="password" value="${ftp.conn.pwd}" />
 		<property name="clientMode" value="0" />
 		<property name="fileType" value="2" />
 		<property name="bufferSize" value="100000" />
 	</bean>
 	<int:channel id="ftpChannel" />
-	<int-ftp:outbound-channel-adapter id="ftpOutbound"
-		channel="ftpChannel" remote-directory="/Users/paulomiguelalmeida"
-		session-factory="ftpClientFactory" />
+	<int-ftp:outbound-channel-adapter id="ftpOutbound" channel="ftpChannel" remote-directory="/Users/paulomiguelalmeida" session-factory="ftpClientFactory" />
 </beans>
