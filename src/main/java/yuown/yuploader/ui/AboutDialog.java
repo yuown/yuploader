@@ -1,7 +1,12 @@
 package yuown.yuploader.ui;
 
+import org.springframework.stereotype.Component;
+
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -9,9 +14,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SpringLayout;
 import javax.swing.border.EmptyBorder;
-
-import org.springframework.stereotype.Component;
-import javax.swing.UIManager;
 
 @Component
 public class AboutDialog extends JDialog {
@@ -55,7 +57,7 @@ public class AboutDialog extends JDialog {
 		}
 		{
 			lblSite = new JLabel("site");
-			lblSite.setForeground(UIManager.getColor("Button.light"));
+			lblSite.setForeground(Color.blue);
 			sl_contentPanel.putConstraint(SpringLayout.NORTH, lblSite, 0, SpringLayout.NORTH, lblNewLabel);
 			sl_contentPanel.putConstraint(SpringLayout.WEST, lblSite, 6, SpringLayout.EAST, lblNewLabel);
 			sl_contentPanel.putConstraint(SpringLayout.EAST, lblSite, 371, SpringLayout.EAST, lblNewLabel);
@@ -83,11 +85,23 @@ public class AboutDialog extends JDialog {
 				okButton.setActionCommand("OK");
 				buttonPane.add(okButton);
 				getRootPane().setDefaultButton(okButton);
+				
+				okButton.addActionListener(new ActionListener() {
+                    
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        closeAbout();
+                    }
+                });
 			}
 		}
 	}
 	
-	public void setHeader(String header) {
+	protected void closeAbout() {
+        this.setVisible(false);
+    }
+
+    public void setHeader(String header) {
 		this.lblHeader.setText(header);
 	}
 	

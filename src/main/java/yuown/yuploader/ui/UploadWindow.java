@@ -78,6 +78,7 @@ public class UploadWindow extends JInternalFrame {
 		getContentPane().add(scrollPane);
 		
 		table = new JTable();
+		table.getTableHeader().setReorderingAllowed(false);
 		table.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent keyPressEvent) {
@@ -147,7 +148,7 @@ public class UploadWindow extends JInternalFrame {
 	protected void chooseFiles(ActionEvent e) {
 		this.fileChooser.setMultiSelectionEnabled(true);
 		this.fileChooser.setFileSelectionMode(1);
-		int command = this.fileChooser.showOpenDialog(null);
+		int command = this.fileChooser.showOpenDialog(this);
 		if (command == 0) {
 			File[] f = this.fileChooser.getSelectedFiles();
 			for (int i = 0; i < f.length; i++) {

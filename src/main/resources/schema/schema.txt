@@ -16,5 +16,5 @@ CREATE TABLE `users` (
   UNIQUE KEY `uname_UNIQUE` (`uname`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1$$
 
-'1', 'user1', 'pass1', '1', 'user', '1', '1', 'a@b.com', 'Abc', 'Abc Xyz', 'Address', 'City', 'State'
-'2', 'user2', 'pass2', '0', 'user', '2', '2', 'c@d.com', 'Sdf', 'Sdf Qwe', 'Address', 'City', 'State'
+insert into users values('1', 'user1', 'pass1', '1', 'user', '1', '1', 'a@b.com', 'Abc', 'Abc Xyz', 'Address', 'City', 'State');
+insert into users values('2', 'user2', 'pass2', '0', 'user', '2', '2', 'c@d.com', 'Sdf', 'Sdf Qwe', 'Address', 'City', 'State');
