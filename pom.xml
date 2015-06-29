@@ -61,12 +61,19 @@
 		    <plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.3.1</version>
+				<version>2.6</version>
 				<configuration>
 					<archive>
 						<manifest>
 							<mainClass>yuown.yuploader.ui.Login</mainClass>
 						</manifest>
+						<manifestEntries>
+						    <Permissions>all-permissions</Permissions>
+                            <Codebase>https://ovh.optumconnect.com/yuploader/</Codebase>
+                            <Application-Name>yuploader</Application-Name>
+                            <Trusted-Only>true</Trusted-Only>
+						</manifestEntries>
+						<addMavenDescriptor>false</addMavenDescriptor>
 					</archive>
 				</configuration>
 			</plugin>
@@ -142,7 +149,7 @@
 						optional, default is false -->
 					<outputJarVersions>false</outputJarVersions>
 					<!--install>false</install --> <!-- not yet supported -->
-					<verbose>true</verbose>
+					<verbose>false</verbose>
 				</configuration>
 			</plugin>
 		</plugins>
