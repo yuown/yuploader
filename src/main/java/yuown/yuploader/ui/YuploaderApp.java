@@ -28,6 +28,18 @@ public class YuploaderApp {
 	
 	@Autowired
 	private FTPHelperBean ftpHelperBean;
+	
+	@Autowired
+	private AboutDialog aboutDialog;
+	
+	@Value("${help.header}")
+	private String headerVariable;
+	
+	@Value("${help.website}")
+	private String siteVariable;
+	
+	@Value("${help.mobile}")
+	private String mobileVariable;
 
 	/**
 	 * Create the application.
@@ -68,11 +80,26 @@ public class YuploaderApp {
 		menuBar.add(mnHelp);
 		
 		JMenuItem mntmAbout = new JMenuItem("About");
+		mntmAbout.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				launchAbout();
+			}
+		});
 		mnHelp.add(mntmAbout);
 		//frame.getContentPane().setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 		
 		desktopPane = new JDesktopPane();
-		frame.add(desktopPane);
+		frame.getContentPane().add(desktopPane);
+	}
+
+	protected void launchAbout() {
+		if(!aboutDialog.isVisible()) {
+			aboutDialog.setTitle(appTitle);
+			aboutDialog.setHeader(headerVariable);
+			aboutDialog.setSite(siteVariable);
+			aboutDialog.setMobile(mobileVariable);
+			aboutDialog.setVisible(true);
+	    }
 	}
 
 	protected void launchUploadFiles(ActionEvent e) {

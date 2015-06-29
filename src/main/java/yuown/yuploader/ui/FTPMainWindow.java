@@ -6,6 +6,7 @@ import org.apache.commons.net.io.CopyStreamEvent;
 import org.apache.commons.net.io.CopyStreamListener;
 
 import yuown.yuploader.model.FileObject;
+import yuown.yuploader.model.Status;
 
 import java.awt.EventQueue;
 import java.awt.Toolkit;
@@ -391,7 +392,7 @@ public class FTPMainWindow
       File f = new File(fo.getFullPath());
       try
       {
-        if ((f.exists()) && (!fo.isCompleted()))
+        if ((f.exists()) && (Status.COMPLETED != fo.getStatus()))
         {
           System.out.println("File: " + fo.getFullPath());
           tM.setValueAt("In Progress", row, 3);
@@ -434,8 +435,7 @@ public class FTPMainWindow
           
           bis.close();
           
-          tM.setValueAt("Completed", row, 3);
-          fo.setCompleted(true);
+          tM.setValueAt(Status.COMPLETED, row, 3);
         }
       }
       catch (FileNotFoundException e1)

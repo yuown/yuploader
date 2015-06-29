@@ -1,15 +1,5 @@
 package yuown.yuploader.ui;
 
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.jdbc.core.JdbcTemplate;
-
-import yuown.yuploader.extract.UserMapper;
-import yuown.yuploader.model.User;
-import yuown.yuploader.util.Helper;
-import yuown.yuploader.util.YuownUtils;
-
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
@@ -23,6 +13,18 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.jdbc.CannotGetJdbcConnectionException;
+import org.springframework.jdbc.core.JdbcTemplate;
+
+import yuown.yuploader.extract.UserMapper;
+import yuown.yuploader.ftp.FTPHelperBean;
+import yuown.yuploader.model.User;
+import yuown.yuploader.util.Helper;
+import yuown.yuploader.util.YuownUtils;
 
 public class Login extends JDialog {
 
@@ -40,6 +42,7 @@ public class Login extends JDialog {
     private JdbcTemplate jdbcTemplate;
     private YuploaderApp applicationDesktop;
     private Helper helper;
+    private FTPHelperBean ftpHelperBean;
 
     /**
      * Launch the application.
@@ -112,35 +115,68 @@ public class Login extends JDialog {
         String user = txtUserName.getText();
         String passwd = new String(txtPassword.getPassword());
         if (StringUtils.isNotBlank(user) && StringUtils.isNotBlank(passwd)) {
-            List<User> users = jdbcTemplate.query(YuownUtils.SELECT_USER_QUERY, new String[] { txtUserName.getText() }, new UserMapper());
-            if (!users.isEmpty()) {
-                User userEntity = users.get(0);
-                if (StringUtils.equalsIgnoreCase(userEntity.getUname(), user) && StringUtils.equals(userEntity.getPasswd(), passwd)) {
-                    if (!userEntity.isEnabled()) {
-                        helper.alert(this, "Your User is Disabled, Please Contact Administrator");
+        	try {
+        		List<User> users = jdbcTemplate.query(YuownUtils.SELECT_USER_QUERY, new String[] { txtUserName.getText() }, new UserMapper());
+                if (!users.isEmpty()) {
+                    User userEntity = users.get(0);
+                    if (StringUtils.equalsIgnoreCase(userEntity.getUname(), user) && StringUtils.equals(userEntity.getPasswd(), passwd)) {
+                        if (!userEntity.isEnabled()) {
+                            helper.alert(this, "Your User is Disabled, Please Contact Administrator");
+                        } else {
+                        	ftpHelperBean.setUserName(userEntity.getUname());
+                            launchApp();
+                            this.setVisible(false);
+                        }
                     } else {
-                        launchApp();
-                        this.setVisible(false);
+                        helper.alert(this, "Your Password is wrong, Please check");
                     }
                 } else {
-                    helper.alert(this, "Your Password is wrong, Please check");
+                    helper.alert(this, "Your Username is wrong, Please check");
                 }
-            } else {
-                helper.alert(this, "Your Username is wrong, Please check");
-            }
+        	} catch(CannotGetJdbcConnectionException cgjdbcexp) {
+        		helper.alert(this, "Failed to Connect to Database Server, Please Contact Administrator");
+        		cgjdbcexp.printStackTrace();
+        	}
         } else {
             helper.alert(this, "Username and Password are mandatory, Please Enter");
         }
     }
 
-    private void launchApp() {
+//    private boolean getFTPConfiguration() {
+//    	List<Config> config = jdbcTemplate.query(YuownUtils.SELECT_FTP_DETAILS_QUERY, new String[] { YuownUtils.FTP_USER, YuownUtils.FTP_PASSWORD, YuownUtils.FTP_PORT, YuownUtils.FTP_PATH, YuownUtils.FTP_HOST }, new ConfigMapper());
+//    	boolean retrievedConfig = false;
+//    	if(config.size() == 5) {
+//    		for (Config eachConfig : config) {
+//    			String configName = eachConfig.getName();
+//				if(StringUtils.equalsIgnoreCase(YuownUtils.FTP_USER, configName)) {
+//					ftpHelperBean.setFtpUsername(eachConfig.getValue());
+//				} else if(StringUtils.equalsIgnoreCase(YuownUtils.FTP_PASSWORD, configName)) {
+//					ftpHelperBean.setFtpPassword(eachConfig.getValue());
+//				} else if(StringUtils.equalsIgnoreCase(YuownUtils.FTP_PORT, configName)) {
+//					int port = 21;
+//					try {
+//						port = Integer.parseInt(eachConfig.getValue());
+//					} catch(Exception e) {}
+//					ftpHelperBean.setFtpPort(port);
+//				} else if(StringUtils.equalsIgnoreCase(YuownUtils.FTP_PATH, configName)) {
+//					ftpHelperBean.setFtpPath(eachConfig.getValue());
+//				} else if(StringUtils.equalsIgnoreCase(YuownUtils.FTP_HOST, configName)) {
+//					ftpHelperBean.setFtpHost(eachConfig.getValue());
+//				}
+//			}
+//    	}
+//    	return retrievedConfig;
+//	}
+
+	private void launchApp() {
         applicationDesktop = context.getBean("applicationDesktop", YuploaderApp.class);
         applicationDesktop.getFrame().setVisible(true);
     }
 
-    private void initialize() {
-        context = new ClassPathXmlApplicationContext(new String[] { "yuploader.xml" });
-        jdbcTemplate = context.getBean("jdbcTemplate", JdbcTemplate.class);
-        helper = context.getBean("helper", Helper.class);
-    }
+	private void initialize() {
+		context = new ClassPathXmlApplicationContext(new String[] { "yuploader.xml" });
+		jdbcTemplate = context.getBean("jdbcTemplate", JdbcTemplate.class);
+		helper = context.getBean("helper", Helper.class);
+		ftpHelperBean = context.getBean("ftpHelperBean", FTPHelperBean.class);
+	}
 }

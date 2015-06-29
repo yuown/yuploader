@@ -10,8 +10,9 @@
 	<context:property-placeholder location="yuploader.properties" />
 	<context:component-scan base-package="yuown.yuploader" use-default-filters="true" />
 
-	<bean id="ftpHelperBean" class="yuown.yuploader.ftp.FTPHelperBean"></bean>
+	<bean id="ftpHelperBean" class="yuown.yuploader.ftp.FTPHelperBean" scope="singleton"></bean>
 	<bean id="applicationDesktop" class="yuown.yuploader.ui.YuploaderApp"></bean>
+	<bean id="aboutDialog" class="yuown.yuploader.ui.AboutDialog"></bean>
 	<bean id="helper" class="yuown.yuploader.util.Helper"></bean>
 	
 	<bean id="uploadWindow" class="yuown.yuploader.ui.UploadWindow">
@@ -33,7 +34,7 @@
 	</bean>
 	<bean id="ftpClientFactory" class="org.springframework.integration.ftp.session.DefaultFtpSessionFactory">
 		<property name="host" value="${ftp.conn.host}" />
-		<property name="port" value="21" />
+		<property name="port" value="${ftp.conn.port}" />
 		<property name="username" value="${ftp.conn.user}" />
 		<property name="password" value="${ftp.conn.pwd}" />
 		<property name="clientMode" value="0" />
@@ -41,5 +42,9 @@
 		<property name="bufferSize" value="100000" />
 	</bean>
 	<int:channel id="ftpChannel" />
-	<int-ftp:outbound-channel-adapter id="ftpOutbound" channel="ftpChannel" remote-directory="/Users/paulomiguelalmeida" session-factory="ftpClientFactory" />
+	<int-ftp:outbound-channel-adapter id="ftpOutbound"
+	   channel="ftpChannel" session-factory="ftpClientFactory"
+	   remote-directory-expression="headers['path'] + '/' + headers['user'] + '/' + headers['date']"
+	   auto-create-directory="true"
+	/>
 </beans>
