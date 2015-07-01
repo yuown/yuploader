@@ -14,6 +14,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 
+
 public class YuploaderApp {
     
     @Value("${yuploader.app.title}")
@@ -40,6 +41,12 @@ public class YuploaderApp {
 	
 	@Value("${help.mobile}")
 	private String mobileVariable;
+	
+	@Value("${app.version}")
+	private String appVersion;
+	
+	@Value("${developer.email}")
+	private String developerEmail;
 
 	/**
 	 * Create the application.
@@ -98,6 +105,8 @@ public class YuploaderApp {
 			aboutDialog.setHeader(headerVariable);
 			aboutDialog.setSite(siteVariable);
 			aboutDialog.setMobile(mobileVariable);
+			aboutDialog.setAppVersion(appVersion);
+			aboutDialog.setDeveloperEmail(developerEmail);
 			aboutDialog.setVisible(true);
 	    }
 	}

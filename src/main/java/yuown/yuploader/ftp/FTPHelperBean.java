@@ -48,45 +48,6 @@ public class FTPHelperBean {
 				.setHeader("path", ftpPath)
 				.setHeader("user", userName)
 				.setHeader("date", date).build();
-		ftpChannel.addInterceptor(new ChannelInterceptor() {
-			
-			private long start = 0;
-			
-			@Override
-			public Message<?> preSend(Message<?> message, MessageChannel channel) {
-				System.out.println("preSend");
-				start = System.currentTimeMillis();
-				return message;
-			}
-
-			@Override
-			public boolean preReceive(MessageChannel channel) {
-				System.out.println("preReceive");
-				return true;
-			}
-
-			@Override
-			public void postSend(Message<?> message, MessageChannel channel, boolean sent) {
-				System.out.println("postSend");
-			}
-
-			@Override
-			public Message<?> postReceive(Message<?> message, MessageChannel channel) {
-				System.out.println("postReceive");
-				return message;
-			}
-
-			@Override
-			public void afterSendCompletion(Message<?> message, MessageChannel channel, boolean sent, Exception ex) {
-				System.out.println("afterSendCompletion");
-				tM.setValueAt(((System.currentTimeMillis() - start)) + " Seconds", row, column);
-			}
-
-			@Override
-			public void afterReceiveCompletion(Message<?> message, MessageChannel channel, Exception ex) {
-				System.out.println("afterReceiveCompletion");
-			}
-		});
 		ftpChannel.send(fileMessage);
 	}
 
