@@ -1,19 +1,10 @@
 package yuown.yuploader.ftp;
 
-import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import javax.swing.table.DefaultTableModel;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
-import org.springframework.integration.channel.DirectChannel;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageChannel;
-import org.springframework.messaging.support.ChannelInterceptor;
-import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -34,22 +25,33 @@ public class FTPHelperBean {
 
 	@Value("${ftp.conn.path}")
 	private String ftpPath;
-
-	@Autowired()
-	private DirectChannel ftpChannel;
+	
+	@Value("${ftp.bufferSize}")
+	private int clientMode;
+	
+	@Value("${ftp.clientMode}")
+	private int fileType;
+	
+	@Value("${ftp.fileType}")
+	private int bufferSize;
+	
+//	@Autowired()
+//	private DirectChannel ftpChannel;
 
 	private String date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
 
 	private String userName;
-	
-	public void uploadFile(String fileName, final DefaultTableModel tM, final int row, final int column) {
-		Message<File> fileMessage = MessageBuilder
-				.withPayload(new File(fileName))
-				.setHeader("path", ftpPath)
-				.setHeader("user", userName)
-				.setHeader("date", date).build();
-		ftpChannel.send(fileMessage);
-	}
+
+	private int currentRow;
+
+//	public void uploadFile(String fileName, final DefaultTableModel tM, final int row, final int column) {
+//		Message<File> fileMessage = MessageBuilder
+//				.withPayload(new File(fileName)).setHeader("path", ftpPath)
+//				.setHeader("user", userName).setHeader("date", date).build();
+//		YuploaderWorker w = new YuploaderWorker(ftpChannel, fileMessage);
+//		this.currentRow = row;
+//		w.execute();
+//	}
 
 	public String getFtpUsername() {
 		return ftpUsername;
@@ -94,5 +96,24 @@ public class FTPHelperBean {
 	public void setUserName(String userName) {
 		this.userName = userName;
 	}
+	
+	public String getUserName() {
+		return this.userName;
+	}
 
+	public int getCurrentRow() {
+		return currentRow;
+	}
+	
+	public int getClientMode() {
+		return clientMode;
+	}
+	
+	public int getFileType() {
+		return fileType;
+	}
+	
+	public int getBufferSize() {
+		return bufferSize;
+	}
 }

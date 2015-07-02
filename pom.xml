@@ -33,11 +33,11 @@
 			<artifactId>spring-jdbc</artifactId>
 			<version>${jdbc.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.integration</groupId>
-			<artifactId>spring-integration-ftp</artifactId>
-			<version>${ftp.version}</version>
-		</dependency>
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.springframework.integration</groupId> -->
+<!-- 			<artifactId>spring-integration-ftp</artifactId> -->
+<!-- 			<version>${ftp.version}</version> -->
+<!-- 		</dependency> -->
 
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -48,6 +48,11 @@
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
 			<version>${commons.lang3.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-net</groupId>
+			<artifactId>commons-net</artifactId>
+			<version>3.3</version>
 		</dependency>
 
 		<dependency>
@@ -66,6 +71,7 @@
 					<archive>
 						<manifest>
 							<mainClass>yuown.yuploader.ui.Login</mainClass>
+							<addClasspath>true</addClasspath>
 						</manifest>
 						<manifestEntries>
 							<Permissions>all-permissions</Permissions>
@@ -75,6 +81,7 @@
 							<Trusted-Library>true</Trusted-Library>
 							<Application-Library-Allowable-Codebase>https://ovh.optumconnect.com/yuploader/</Application-Library-Allowable-Codebase>
 							<Caller-Allowable-Codebase>https://ovh.optumconnect.com/yuploader/</Caller-Allowable-Codebase>
+							<Class-Path>lib/</Class-Path>
 						</manifestEntries>
 						<addMavenDescriptor>false</addMavenDescriptor>
 					</archive>
@@ -155,7 +162,7 @@
 					<outputJarVersions>true</outputJarVersions>
 					<!--install>false</install --> <!-- not yet supported -->
 					<verbose>false</verbose>
-					<makeArchive>false</makeArchive>
+					<makeArchive>true</makeArchive>
 				</configuration>
 			</plugin>
 		</plugins>
