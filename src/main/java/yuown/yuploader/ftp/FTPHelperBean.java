@@ -3,117 +3,122 @@ package yuown.yuploader.ftp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+
+import yuown.yuploader.model.User;
 
 @Component
 @Scope("singleton")
 public class FTPHelperBean {
 
-	@Value("${ftp.conn.user}")
-	private String ftpUsername;
+	private String ftpUserName;
 
-	@Value("${ftp.conn.pwd}")
 	private String ftpPassword;
 
-	@Value("${ftp.conn.host}")
 	private String ftpHost;
 
-	@Value("${ftp.conn.port}")
 	private int ftpPort;
 
-	@Value("${ftp.conn.path}")
-	private String ftpPath;
-	
-	@Value("${ftp.bufferSize}")
+	private String ftpBasePath;
+
 	private int clientMode;
-	
-	@Value("${ftp.clientMode}")
+
 	private int fileType;
-	
-	@Value("${ftp.fileType}")
+
 	private int bufferSize;
-	
-//	@Autowired()
-//	private DirectChannel ftpChannel;
 
 	private String date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
 
-	private String userName;
+	private User user;
 
 	private int currentRow;
 
-//	public void uploadFile(String fileName, final DefaultTableModel tM, final int row, final int column) {
-//		Message<File> fileMessage = MessageBuilder
-//				.withPayload(new File(fileName)).setHeader("path", ftpPath)
-//				.setHeader("user", userName).setHeader("date", date).build();
-//		YuploaderWorker w = new YuploaderWorker(ftpChannel, fileMessage);
-//		this.currentRow = row;
-//		w.execute();
-//	}
-
-	public String getFtpUsername() {
-		return ftpUsername;
-	}
-
-	public void setFtpUsername(String ftpUsername) {
-		this.ftpUsername = ftpUsername;
+	public String getFtpUserName() {
+		return ftpUserName;
 	}
 
 	public String getFtpPassword() {
 		return ftpPassword;
 	}
 
-	public void setFtpPassword(String ftpPassword) {
-		this.ftpPassword = ftpPassword;
-	}
-
 	public String getFtpHost() {
 		return ftpHost;
-	}
-
-	public void setFtpHost(String ftpHost) {
-		this.ftpHost = ftpHost;
-	}
-
-	public void setFtpPort(int port) {
-		this.ftpPort = port;
 	}
 
 	public int getFtpPort() {
 		return ftpPort;
 	}
 
-	public void setFtpPath(String path) {
-		this.ftpPath = path;
+	public String getFtpBasePath() {
+		return ftpBasePath;
 	}
 
-	public String getFtpPath() {
-		return ftpPath;
+	public int getClientMode() {
+		return clientMode;
 	}
 
-	public void setUserName(String userName) {
-		this.userName = userName;
+	public int getFileType() {
+		return fileType;
 	}
-	
-	public String getUserName() {
-		return this.userName;
+
+	public int getBufferSize() {
+		return bufferSize;
+	}
+
+	public String getDate() {
+		return date;
+	}
+
+	public User getUser() {
+		return user;
 	}
 
 	public int getCurrentRow() {
 		return currentRow;
 	}
-	
-	public int getClientMode() {
-		return clientMode;
+
+	public void setFtpUserName(String ftpUserName) {
+		this.ftpUserName = ftpUserName;
 	}
-	
-	public int getFileType() {
-		return fileType;
+
+	public void setFtpPassword(String ftpPassword) {
+		this.ftpPassword = ftpPassword;
 	}
-	
-	public int getBufferSize() {
-		return bufferSize;
+
+	public void setFtpHost(String ftpHost) {
+		this.ftpHost = ftpHost;
+	}
+
+	public void setFtpPort(int ftpPort) {
+		this.ftpPort = ftpPort;
+	}
+
+	public void setFtpBasePath(String ftpBasePath) {
+		this.ftpBasePath = ftpBasePath;
+	}
+
+	public void setClientMode(int clientMode) {
+		this.clientMode = clientMode;
+	}
+
+	public void setFileType(int fileType) {
+		this.fileType = fileType;
+	}
+
+	public void setBufferSize(int bufferSize) {
+		this.bufferSize = bufferSize;
+	}
+
+	public void setDate(String date) {
+		this.date = date;
+	}
+
+	public void setUser(User user) {
+		this.user = user;
+	}
+
+	public void setCurrentRow(int currentRow) {
+		this.currentRow = currentRow;
 	}
 }

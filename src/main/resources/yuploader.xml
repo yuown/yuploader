@@ -10,19 +10,19 @@
 	<context:property-placeholder location="yuploader.properties" />
 	<context:component-scan base-package="yuown.yuploader" use-default-filters="true" />
 
-	<bean id="ftpHelperBean" class="yuown.yuploader.ftp.FTPHelperBean" scope="singleton"></bean>
-	<bean id="applicationDesktop" class="yuown.yuploader.ui.YuploaderApp"></bean>
-	<bean id="aboutDialog" class="yuown.yuploader.ui.AboutDialog"></bean>
-	<bean id="helper" class="yuown.yuploader.util.Helper"></bean>
-	
-	<bean id="uploadWindow" class="yuown.yuploader.ui.UploadWindow">
-	   <constructor-arg name="title" value="Upload Files"></constructor-arg>
-	   <constructor-arg name="resizable" value="true"></constructor-arg>
-	   <constructor-arg name="closable" value="true"></constructor-arg>
-	   <constructor-arg name="maximizable" value="true"></constructor-arg>
-	   <constructor-arg name="iconifiable" value="true"></constructor-arg>
+	<bean id="ftpHelperBean" class="yuown.yuploader.ftp.FTPHelperBean" scope="singleton">
+		<property name="ftpUserName" value="${ftp.conn.user}"></property>
+		<property name="ftpPassword" value="${ftp.conn.pass}"></property>
+		<property name="ftpHost" value="${ftp.conn.host}"></property>
+		<property name="ftpPort" value="${ftp.conn.port}" />
+		<property name="ftpBasePath" value="${ftp.conn.basepath}"></property>
+		<property name="clientMode" value="${ftp.clientMode}" />
+		<property name="fileType" value="${ftp.fileType}" />
+		<property name="bufferSize" value="${ftp.bufferSize}" />
 	</bean>
-
+	<bean id="helper" class="yuown.yuploader.util.Helper"></bean>
+<!-- 	<bean id="client" class="yuown.yuploader.ui.Client"></bean> -->
+	
 	<bean id="yuploaderDs" class="org.apache.commons.dbcp2.BasicDataSource">
 		<property name="driverClassName" value="${db.conn.driver}" />
 		<property name="url" value="${db.conn.url}" />
