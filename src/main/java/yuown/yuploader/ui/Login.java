@@ -21,11 +21,13 @@ import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Component;
 
 import yuown.yuploader.extract.UserMapper;
 import yuown.yuploader.ftp.FTPHelperBean;
@@ -47,9 +49,11 @@ public class Login extends JDialog {
     private JPasswordField txtPassword;
 
     private JdbcTemplate jdbcTemplate;
-    private Client client;
     private Helper helper;
     private FTPHelperBean ftpHelperBean;
+    
+    @Autowired
+    private Client client;
     
     private Properties props = new Properties();
 

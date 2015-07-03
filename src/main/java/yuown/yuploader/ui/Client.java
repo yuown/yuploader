@@ -17,10 +17,14 @@ import javax.swing.SpringLayout;
 import javax.swing.SwingConstants;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import yuown.yuploader.model.FileObject;
+import yuown.yuploader.model.YuploaderTableModel;
 
 @Component
 public class Client extends JFrame {
@@ -44,10 +48,13 @@ public class Client extends JFrame {
     @Value("${app.version}")
 	private String appVersion;
     
-    @Autowired
     private JFileChooser fileChooser;
+    
+    @Autowired
+    private YuploaderTableModel yuploaderTableModel;
 
     public Client() {
+        init();
 	}
     
     @PostConstruct
@@ -178,6 +185,9 @@ public class Client extends JFrame {
         fileTable.getTableHeader().setReorderingAllowed(false);
         scrollPane.setColumnHeaderView(fileTable);
         scrollPane.setViewportView(fileTable);
+        fileTable.setModel(yuploaderTableModel);
+        
+        
         contentPane.add(btnAddFiles);
         
         JButton btnUploadFiles = new JButton("Upload Files");

@@ -10,6 +10,8 @@
 	<context:property-placeholder location="yuploader.properties" />
 	<context:component-scan base-package="yuown.yuploader" use-default-filters="true" />
 
+    <bean id="client" class="yuown.yuploader.ui.Client" />
+
 	<bean id="ftpHelperBean" class="yuown.yuploader.ftp.FTPHelperBean" scope="singleton">
 		<property name="ftpUserName" value="${ftp.conn.user}"></property>
 		<property name="ftpPassword" value="${ftp.conn.pass}"></property>
