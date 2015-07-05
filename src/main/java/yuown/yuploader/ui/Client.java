@@ -2,7 +2,6 @@ package yuown.yuploader.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -22,6 +21,7 @@ import javax.swing.SwingConstants;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
 
+import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,33 +67,40 @@ public class Client extends JFrame {
 	@Value("${yuploader.app.title}")
 	private String appTitle;
 
+	@Value("${logo.path}")
+	private String logoPath;
+
 	private JFileChooser fileChooser;
 	private JLabel lblUsername;
 	private JLabel lblName;
+	private JButton btnAddFiles;
+	private JButton btnRemoveSelectedFiles;
+	private JButton btnUploadFiles;
+	private JButton btnlogout;
 
 	@Autowired
 	private Helper helper;
-	
+
 	@Autowired
 	private User userObject;
-	
+
 	private boolean inProgress;
-	
+
 	@Autowired
 	private YuploaderTableModel yuploaderTableModel;
-	
+
 	@Autowired
 	private QueueUpload queueUpload;
-	
+
 	private ApplicationContext context;
-	
+
 	private AutowireCapableBeanFactory aw;
-	
+
 	private boolean connected = false;
-	
+
 	@Autowired
 	private FTPClient ftpClient;
-	
+
 	@Value("${ftp.conn.host}")
 	private String ftpHost;
 
@@ -105,12 +112,17 @@ public class Client extends JFrame {
 
 	@Value("${ftp.conn.port}")
 	private int ftpPort;
-	
+
 	@Value("${ftp.bufferSize}")
 	private int ftpBufferSize;
-	
+
 	@Value("${ftp.conn.basepath}")
 	private String ftpBasePath;
+
+	@Value("${ftp.conn.timeout}")
+	private long ftpTimeout;
+
+	private long lastAccess;
 
 	public Client() {
 //		init();
@@ -119,7 +131,7 @@ public class Client extends JFrame {
 	@PostConstruct
 	public void init() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 660, 551);
+		setBounds(100, 100, 800, 700);
 		setTitle(appTitle);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -150,7 +162,7 @@ public class Client extends JFrame {
 		sl_userPanel.putConstraint(SpringLayout.EAST, lblName, -10, SpringLayout.EAST, userPanel);
 		userPanel.add(lblName);
 
-		JButton btnlogout = new JButton("Logout");
+		btnlogout = new JButton("Logout");
 		btnlogout.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				logout(e);
@@ -170,7 +182,7 @@ public class Client extends JFrame {
 		logoPanel.setLayout(sl_logoPanel);
 
 		try {
-			BufferedImage logo = ImageIO.read(getClass().getResource("/images/vvv.png"));
+			BufferedImage logo = ImageIO.read(getClass().getResource(logoPath));
 			lblForIcon_1 = new JLabel(new ImageIcon(logo));
 			sl_logoPanel.putConstraint(SpringLayout.NORTH, lblForIcon_1, 0, SpringLayout.NORTH, logoPanel);
 			sl_logoPanel.putConstraint(SpringLayout.WEST, lblForIcon_1, 0, SpringLayout.WEST, logoPanel);
@@ -241,7 +253,7 @@ public class Client extends JFrame {
 		sl_contentPane.putConstraint(SpringLayout.EAST, scrollPane, -5, SpringLayout.EAST, contentPane);
 		contentPane.add(scrollPane);
 
-		JButton btnAddFiles = new JButton("Add Files");
+		btnAddFiles = new JButton("Add Files");
 		btnAddFiles.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				selectFiles(e);
@@ -260,38 +272,56 @@ public class Client extends JFrame {
 
 		contentPane.add(btnAddFiles);
 
-		JButton btnUploadFiles = new JButton("Upload Files");
+		btnUploadFiles = new JButton("Upload Files");
 		btnUploadFiles.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				submitToUpload();
 			}
 		});
 		sl_contentPane.putConstraint(SpringLayout.NORTH, btnUploadFiles, 5, SpringLayout.SOUTH, logoPanel);
-		sl_contentPane.putConstraint(SpringLayout.EAST, btnUploadFiles, -5, SpringLayout.EAST, contentPane);
 		contentPane.add(btnUploadFiles);
-		
-		JButton btnRemoveSelectedFiles = new JButton("Remove Selected Files");
+
+		btnRemoveSelectedFiles = new JButton("Remove Selected Files");
+		btnRemoveSelectedFiles.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				removeSelectedFiles();
+			}
+		});
+		sl_contentPane.putConstraint(SpringLayout.WEST, btnUploadFiles, 5, SpringLayout.EAST, btnRemoveSelectedFiles);
+		sl_contentPane.putConstraint(SpringLayout.WEST, btnRemoveSelectedFiles, 5, SpringLayout.EAST, btnAddFiles);
 		sl_contentPane.putConstraint(SpringLayout.NORTH, btnRemoveSelectedFiles, 5, SpringLayout.SOUTH, logoPanel);
-		sl_contentPane.putConstraint(SpringLayout.WEST, btnRemoveSelectedFiles, 10, SpringLayout.EAST, btnAddFiles);
 		contentPane.add(btnRemoveSelectedFiles);
 
 		fileChooser = new JFileChooser();
 		
+		System.out.println("2. Client: " + this.hashCode());
 	}
 
-	protected void submitToUpload()  {
+	protected void removeSelectedFiles() {
+		yuploaderTableModel.removeSelectedRows();
+	}
+
+	protected void submitToUpload() {
 		checkTimeoutAndConnect();
 		createMissingDirectories();
+
 		queueUpload = aw.createBean(QueueUpload.class);
-		queueUpload.setContext(context);
 		queueUpload.execute();
 	}
 
-	private void toggleLoginCtrls(boolean b) {
-		
+	public void toggleLoginCtrls(boolean b) {
+		btnAddFiles.setEnabled(b);
+		btnUploadFiles.setEnabled(b);
+		btnRemoveSelectedFiles.setEnabled(b);
+		btnlogout.setEnabled(b);
 	}
 
 	protected void logout(ActionEvent e) {
+		try {
+			ftpClient.logout();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
 		this.dispose();
 	}
 
@@ -347,9 +377,9 @@ public class Client extends JFrame {
 	public void setConnected(boolean connected) {
 		this.connected = connected;
 	}
-	
+
 	public boolean checkTimeoutAndConnect() {
-		if (!isConnected()) {
+		if (!isConnected() || (System.currentTimeMillis() - lastAccess > ftpTimeout)) {
 			try {
 				ftpClient.connect(ftpHost);
 				int reply = ftpClient.getReplyCode();
@@ -359,15 +389,14 @@ public class Client extends JFrame {
 				} else {
 					if (!ftpClient.login(ftpUsername, ftpPassword)) {
 						ftpClient.logout();
-						// helper.alert(client,
-						// "Problem with FTP Server Credentials, Contact Admin.");
+						helper.alert(this, "Problem with FTP Server Credentials, Contact Admin.");
 					} else {
 						try {
 							ftpClient.enterLocalPassiveMode();
 							ftpClient.setAutodetectUTF8(true);
-							ftpClient.setFileType(2, 2);
-							ftpClient.setBufferSize(ftpBufferSize);
-//							ftpClient.setFileTransferMode(2);
+							ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+							ftpClient.setBufferSize(-1);
+							ftpClient.setFileTransferMode(2);
 							setConnected(true);
 						} catch (Exception e1) {
 							e1.printStackTrace();
@@ -380,7 +409,7 @@ public class Client extends JFrame {
 		}
 		return connected;
 	}
-	
+
 	private void createMissingDirectories() {
 		String DDMMYYYY = helper.getDateDDMMYYYY();
 		boolean exists = false;
@@ -399,11 +428,17 @@ public class Client extends JFrame {
 			if (!exists) {
 				ftpClient.makeDirectory(DDMMYYYY);
 				ftpClient.changeWorkingDirectory(DDMMYYYY);
-				System.out.println("PWD: " + ftpClient.pwd());
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-	
+	}
+
+	public void setProgress(boolean b) {
+		this.inProgress = true;
+	}
+
+	public void setLastAccess(long currentTimeMillis) {
+		this.lastAccess = currentTimeMillis;
 	}
 }

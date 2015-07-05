@@ -20,4 +20,12 @@ public class YuownUtils {
 
 	public static final String VALUE = "value";
 
+	public static double longTo2Decimals(long input, long divide) {
+		return (double) ((long) ((double) (input / divide) * 10)) / 10;
+	}
+	
+	public static double longTo2Decimals(double input, long divide) {
+		return (double) ((long) ((double) (input / divide) * 10)) / 10;
+	}
+
 }

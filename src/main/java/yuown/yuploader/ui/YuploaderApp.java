@@ -33,7 +33,7 @@ import yuown.yuploader.model.User;
 import yuown.yuploader.util.Helper;
 import yuown.yuploader.util.YuownUtils;
 
-public class Login extends JDialog {
+public class YuploaderApp extends JDialog {
 
     /**
      * 
@@ -56,13 +56,14 @@ public class Login extends JDialog {
     private User userObject;
     
     private Properties props = new Properties();
+    private JLabel forIcon;
 
     /**
      * Launch the application.
      */
     public static void main(String[] args) {
         try {
-            Login dialog = new Login();
+            YuploaderApp dialog = new YuploaderApp();
             dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
             dialog.setVisible(true);
         } catch (Exception e) {
@@ -73,12 +74,14 @@ public class Login extends JDialog {
     /**
      * Create the dialog.
      */
-    public Login() {
-        setResizable(false);
+    public YuploaderApp() {
+    	setResizable(false);
         initialize();
         setTitle(props.getProperty("yuploader.app.title"));
-        setBounds(100, 100, 700, 400);
+        setBounds(100, 100, 460, 480);
         SpringLayout springLayout = new SpringLayout();
+        springLayout.putConstraint(SpringLayout.WEST, loginPanel, 10, SpringLayout.WEST, getContentPane());
+        springLayout.putConstraint(SpringLayout.EAST, loginPanel, -10, SpringLayout.EAST, getContentPane());
         getContentPane().setLayout(springLayout);
         loginPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
         getContentPane().add(loginPanel);
@@ -86,12 +89,12 @@ public class Login extends JDialog {
         loginPanel.setLayout(sl_loginPanel);
 
         JLabel lblUserName = new JLabel("User Name: ");
-        sl_loginPanel.putConstraint(SpringLayout.NORTH, lblUserName, 10, SpringLayout.NORTH, loginPanel);
+        sl_loginPanel.putConstraint(SpringLayout.NORTH, lblUserName, 5, SpringLayout.NORTH, loginPanel);
         sl_loginPanel.putConstraint(SpringLayout.WEST, lblUserName, 10, SpringLayout.WEST, loginPanel);
         loginPanel.add(lblUserName);
 
         JLabel lblPassword = new JLabel("Password: ");
-        sl_loginPanel.putConstraint(SpringLayout.NORTH, lblPassword, 20, SpringLayout.SOUTH, lblUserName);
+        sl_loginPanel.putConstraint(SpringLayout.NORTH, lblPassword, 15, SpringLayout.SOUTH, lblUserName);
         sl_loginPanel.putConstraint(SpringLayout.WEST, lblPassword, 10, SpringLayout.WEST, loginPanel);
         sl_loginPanel.putConstraint(SpringLayout.EAST, lblPassword, 0, SpringLayout.EAST, lblUserName);
         loginPanel.add(lblPassword);
@@ -109,79 +112,66 @@ public class Login extends JDialog {
         sl_loginPanel.putConstraint(SpringLayout.EAST, txtPassword, 0, SpringLayout.EAST, txtUserName);
         loginPanel.add(txtPassword);
         
-        JPanel iconPanel = new JPanel();
-        springLayout.putConstraint(SpringLayout.NORTH, loginPanel, 6, SpringLayout.SOUTH, iconPanel);
-        springLayout.putConstraint(SpringLayout.WEST, loginPanel, 0, SpringLayout.WEST, iconPanel);
-        springLayout.putConstraint(SpringLayout.EAST, loginPanel, 0, SpringLayout.EAST, iconPanel);
+        JPanel headerPanel = new JPanel();
+        springLayout.putConstraint(SpringLayout.SOUTH, loginPanel, 121, SpringLayout.SOUTH, headerPanel);
+        springLayout.putConstraint(SpringLayout.EAST, headerPanel, -10, SpringLayout.EAST, getContentPane());
+        springLayout.putConstraint(SpringLayout.NORTH, loginPanel, 10, SpringLayout.SOUTH, headerPanel);
+        springLayout.putConstraint(SpringLayout.WEST, headerPanel, 10, SpringLayout.WEST, getContentPane());
         
         JButton btnLogin = new JButton("Login");
+        sl_loginPanel.putConstraint(SpringLayout.NORTH, btnLogin, 10, SpringLayout.SOUTH, txtPassword);
+        sl_loginPanel.putConstraint(SpringLayout.EAST, btnLogin, 0, SpringLayout.EAST, txtPassword);
         btnLogin.addActionListener(new ActionListener() {
         	public void actionPerformed(ActionEvent e) {
         		login(e);
         	}
         });
-        sl_loginPanel.putConstraint(SpringLayout.WEST, btnLogin, 0, SpringLayout.WEST, lblUserName);
-        sl_loginPanel.putConstraint(SpringLayout.SOUTH, btnLogin, -10, SpringLayout.SOUTH, loginPanel);
         loginPanel.add(btnLogin);
         getRootPane().setDefaultButton(btnLogin);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        getContentPane().add(headerPanel);
+        SpringLayout sl_headerPanel = new SpringLayout();
+        headerPanel.setLayout(sl_headerPanel);
         
-        JButton btnCancel = new JButton("Cancel");
-        sl_loginPanel.putConstraint(SpringLayout.WEST, btnCancel, 20, SpringLayout.EAST, btnLogin);
-        sl_loginPanel.putConstraint(SpringLayout.SOUTH, btnCancel, 0, SpringLayout.SOUTH, btnLogin);
-        loginPanel.add(btnCancel);
-        springLayout.putConstraint(SpringLayout.NORTH, iconPanel, 10, SpringLayout.NORTH, getContentPane());
-        springLayout.putConstraint(SpringLayout.WEST, iconPanel, 10, SpringLayout.WEST, getContentPane());
-        springLayout.putConstraint(SpringLayout.SOUTH, iconPanel, 180, SpringLayout.NORTH, getContentPane());
-        springLayout.putConstraint(SpringLayout.EAST, iconPanel, -10, SpringLayout.EAST, getContentPane());
-        getContentPane().add(iconPanel);
-        SpringLayout sl_iconPanel = new SpringLayout();
-        iconPanel.setLayout(sl_iconPanel);
-        
-        JLabel forIcon = new JLabel("For Icon");
+        BufferedImage logo = null;
         try {
-			BufferedImage logo = ImageIO.read(getClass().getResource("/images/vvv.png"));
-			forIcon = new JLabel(new ImageIcon(logo));
-			sl_iconPanel.putConstraint(SpringLayout.NORTH, forIcon, 0, SpringLayout.NORTH, iconPanel);
-	        sl_iconPanel.putConstraint(SpringLayout.WEST, forIcon, 0, SpringLayout.WEST, iconPanel);
-	        sl_iconPanel.putConstraint(SpringLayout.SOUTH, forIcon, 160, SpringLayout.NORTH, iconPanel);
-	        sl_iconPanel.putConstraint(SpringLayout.EAST, forIcon, 217, SpringLayout.WEST, iconPanel);
+			logo = ImageIO.read(getClass().getResource(props.getProperty("logo.path")));
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
-        iconPanel.add(forIcon);
         
         JLabel lblHeader = new JLabel(props.getProperty("help.header"));
-        sl_iconPanel.putConstraint(SpringLayout.NORTH, lblHeader, 5, SpringLayout.NORTH, iconPanel);
-        sl_iconPanel.putConstraint(SpringLayout.WEST, lblHeader, 5, SpringLayout.EAST, forIcon);
-        sl_iconPanel.putConstraint(SpringLayout.EAST, lblHeader, -5, SpringLayout.EAST, iconPanel);
-        iconPanel.add(lblHeader);
+        sl_headerPanel.putConstraint(SpringLayout.NORTH, lblHeader, 5, SpringLayout.NORTH, headerPanel);
+        sl_headerPanel.putConstraint(SpringLayout.WEST, lblHeader, 5, SpringLayout.WEST, headerPanel);
+        sl_headerPanel.putConstraint(SpringLayout.EAST, lblHeader, -5, SpringLayout.EAST, headerPanel);
+        headerPanel.add(lblHeader);
         
         JLabel lblForSite = new JLabel("Website: ");
-        sl_iconPanel.putConstraint(SpringLayout.NORTH, lblForSite, 5, SpringLayout.SOUTH, lblHeader);
-        sl_iconPanel.putConstraint(SpringLayout.WEST, lblForSite, 5, SpringLayout.EAST, forIcon);
-        iconPanel.add(lblForSite);
+        sl_headerPanel.putConstraint(SpringLayout.NORTH, lblForSite, 5, SpringLayout.SOUTH, lblHeader);
+        sl_headerPanel.putConstraint(SpringLayout.WEST, lblForSite, 5, SpringLayout.WEST, headerPanel);
+        sl_headerPanel.putConstraint(SpringLayout.EAST, lblForSite, 80, SpringLayout.WEST, headerPanel);
+        headerPanel.add(lblForSite);
         
         JLabel lblForMobile = new JLabel("Mobile: ");
-        sl_iconPanel.putConstraint(SpringLayout.NORTH, lblForMobile, 5, SpringLayout.SOUTH, lblForSite);
-        sl_iconPanel.putConstraint(SpringLayout.WEST, lblForMobile, 5, SpringLayout.EAST, forIcon);
-        iconPanel.add(lblForMobile);
+        sl_headerPanel.putConstraint(SpringLayout.NORTH, lblForMobile, 5, SpringLayout.SOUTH, lblForSite);
+        sl_headerPanel.putConstraint(SpringLayout.WEST, lblForMobile, 5, SpringLayout.WEST, headerPanel);
+        sl_headerPanel.putConstraint(SpringLayout.EAST, lblForMobile, 80, SpringLayout.WEST, headerPanel);
+        headerPanel.add(lblForMobile);
         
         JLabel lblSite = new JLabel(props.getProperty("help.site"));
-        sl_iconPanel.putConstraint(SpringLayout.NORTH, lblSite, 0, SpringLayout.NORTH, lblForSite);
-        sl_iconPanel.putConstraint(SpringLayout.WEST, lblSite, 10, SpringLayout.EAST, lblForSite);
-        sl_iconPanel.putConstraint(SpringLayout.EAST, lblSite, 0, SpringLayout.EAST, lblHeader);
-        iconPanel.add(lblSite);
+        sl_headerPanel.putConstraint(SpringLayout.NORTH, lblSite, 0, SpringLayout.NORTH, lblForSite);
+        sl_headerPanel.putConstraint(SpringLayout.WEST, lblSite, 10, SpringLayout.EAST, lblForSite);
+        sl_headerPanel.putConstraint(SpringLayout.EAST, lblSite, -5, SpringLayout.EAST, headerPanel);
+        headerPanel.add(lblSite);
         
         JLabel lblNumber = new JLabel(props.getProperty("help.mobile"));
-        sl_iconPanel.putConstraint(SpringLayout.NORTH, lblNumber, 0, SpringLayout.NORTH, lblForMobile);
-        sl_iconPanel.putConstraint(SpringLayout.WEST, lblNumber, 0, SpringLayout.WEST, lblSite);
-        sl_iconPanel.putConstraint(SpringLayout.EAST, lblNumber, 0, SpringLayout.EAST, lblHeader);
-        iconPanel.add(lblNumber);
+        sl_headerPanel.putConstraint(SpringLayout.NORTH, lblNumber, 0, SpringLayout.NORTH, lblForMobile);
+        sl_headerPanel.putConstraint(SpringLayout.WEST, lblNumber, 10, SpringLayout.EAST, lblForMobile);
+        sl_headerPanel.putConstraint(SpringLayout.EAST, lblNumber, -5, SpringLayout.EAST, headerPanel);
+        headerPanel.add(lblNumber);
         
         JPanel statusPanel = new JPanel();
-        springLayout.putConstraint(SpringLayout.SOUTH, loginPanel, -10, SpringLayout.NORTH, statusPanel);
-        springLayout.putConstraint(SpringLayout.NORTH, statusPanel, -35, SpringLayout.SOUTH, getContentPane());
+        springLayout.putConstraint(SpringLayout.NORTH, statusPanel, -40, SpringLayout.SOUTH, getContentPane());
         springLayout.putConstraint(SpringLayout.WEST, statusPanel, 10, SpringLayout.WEST, getContentPane());
         springLayout.putConstraint(SpringLayout.SOUTH, statusPanel, -5, SpringLayout.SOUTH, getContentPane());
         springLayout.putConstraint(SpringLayout.EAST, statusPanel, -10, SpringLayout.EAST, getContentPane());
@@ -204,6 +194,18 @@ public class Login extends JDialog {
         sl_statusPanel.putConstraint(SpringLayout.NORTH, lblAppVersion, 7, SpringLayout.NORTH, statusPanel);
         sl_statusPanel.putConstraint(SpringLayout.EAST, lblAppVersion, -10, SpringLayout.EAST, statusPanel);
         statusPanel.add(lblAppVersion);
+        forIcon = new JLabel(new ImageIcon(logo));
+        springLayout.putConstraint(SpringLayout.SOUTH, headerPanel, 90, SpringLayout.SOUTH, forIcon);
+        springLayout.putConstraint(SpringLayout.NORTH, forIcon, 10, SpringLayout.NORTH, getContentPane());
+        springLayout.putConstraint(SpringLayout.WEST, forIcon, 10, SpringLayout.WEST, getContentPane());
+        springLayout.putConstraint(SpringLayout.SOUTH, forIcon, 200, SpringLayout.NORTH, getContentPane());
+        springLayout.putConstraint(SpringLayout.EAST, forIcon, -10, SpringLayout.EAST, getContentPane());
+        sl_headerPanel.putConstraint(SpringLayout.WEST, forIcon, 10, SpringLayout.WEST, getContentPane());
+        sl_headerPanel.putConstraint(SpringLayout.EAST, forIcon, 227, SpringLayout.WEST, getContentPane());
+        sl_headerPanel.putConstraint(SpringLayout.NORTH, forIcon, 10, SpringLayout.NORTH, getContentPane());
+        sl_headerPanel.putConstraint(SpringLayout.SOUTH, forIcon, 170, SpringLayout.NORTH, getContentPane());
+        springLayout.putConstraint(SpringLayout.NORTH, headerPanel, 10, SpringLayout.SOUTH, forIcon);
+        getContentPane().add(forIcon);
 
     }
 
@@ -265,6 +267,7 @@ public class Login extends JDialog {
 	}
 
 	private void launchApp() {
+		System.out.println("3. Client: " + client.hashCode());
 		client.setVisible(true);
 		client.setUser();
 		setVisible(false);
@@ -277,7 +280,7 @@ public class Login extends JDialog {
         helper = context.getBean("helper", Helper.class);
         
         AutowireCapableBeanFactory aw = context.getAutowireCapableBeanFactory();
-        client = aw.createBean(Client.class);
+        client = aw.getBean(Client.class);
         client.setContext(context);
         userObject = aw.getBean("userObject", User.class);
         InputStream inputStream = getClass().getClassLoader().getResourceAsStream("yuploader.properties");

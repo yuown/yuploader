@@ -6,6 +6,7 @@ public class FileObject {
 	private long size;
 	private String progress;
 	private Status status;
+	private long offset = 0;
 
 	public String getFileName() {
 		return this.fileName;
@@ -63,5 +64,13 @@ public class FileObject {
 
 	public void setStatus(Status status) {
 		this.status = status;
+	}
+
+	public long getOffset() {
+		return offset;
+	}
+
+	public void setOffset(long offset) {
+		this.offset = offset;
 	}
 }

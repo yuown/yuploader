@@ -1,8 +1,6 @@
 package yuown.yuploader.model;
 
 import javax.swing.JTable;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
