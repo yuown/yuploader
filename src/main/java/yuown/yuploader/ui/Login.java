@@ -27,10 +27,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Component;
 
 import yuown.yuploader.extract.UserMapper;
-import yuown.yuploader.ftp.FTPHelperBean;
 import yuown.yuploader.model.User;
 import yuown.yuploader.util.Helper;
 import yuown.yuploader.util.YuownUtils;
@@ -50,10 +48,12 @@ public class Login extends JDialog {
 
     private JdbcTemplate jdbcTemplate;
     private Helper helper;
-    private FTPHelperBean ftpHelperBean;
     
     @Autowired
     private Client client;
+    
+    @Autowired
+    private User userObject;
     
     private Properties props = new Properties();
 
@@ -245,7 +245,7 @@ public class Login extends JDialog {
 						if (!userEntity.isEnabled()) {
 							helper.alert(this, "Your User is Disabled, Please Contact Administrator");
 						} else {
-							ftpHelperBean.setUser(userEntity);
+							this.userObject.setUname(userEntity.getUname());
 							launchApp();
 							this.setVisible(false);
 						}
@@ -266,18 +266,20 @@ public class Login extends JDialog {
 
 	private void launchApp() {
 		client.setVisible(true);
+		client.setUser();
 		setVisible(false);
+		dispose();
     }
 
     private void initialize() {
         context = new ClassPathXmlApplicationContext(new String[] { "yuploader.xml" });
         jdbcTemplate = context.getBean("jdbcTemplate", JdbcTemplate.class);
         helper = context.getBean("helper", Helper.class);
-        ftpHelperBean = context.getBean("ftpHelperBean", FTPHelperBean.class);
-//        client = context.getBean("client", Client.class);
         
         AutowireCapableBeanFactory aw = context.getAutowireCapableBeanFactory();
         client = aw.createBean(Client.class);
+        client.setContext(context);
+        userObject = aw.getBean("userObject", User.class);
         InputStream inputStream = getClass().getClassLoader().getResourceAsStream("yuploader.properties");
         
 		if (inputStream != null) {

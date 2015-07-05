@@ -3,13 +3,14 @@ package yuown.yuploader.ftp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import yuown.yuploader.model.User;
 
 @Component
-@Scope("singleton")
+@Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
 public class FTPHelperBean {
 
 	private String ftpUserName;

@@ -6,7 +6,6 @@ public class FileObject {
 	private long size;
 	private String progress;
 	private Status status;
-	private String folder;
 
 	public String getFileName() {
 		return this.fileName;
@@ -56,14 +55,6 @@ public class FileObject {
 			}
 		}
 		return false;
-	}
-
-	public void setFolder(String name) {
-		this.folder = name;
-	}
-
-	public String getFolder() {
-		return this.folder;
 	}
 
 	public Status getStatus() {

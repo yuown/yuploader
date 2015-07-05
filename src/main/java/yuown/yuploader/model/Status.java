@@ -2,7 +2,7 @@ package yuown.yuploader.model;
 
 public enum Status {
 
-	ADDED("ADDED"), IN_PROGRESS("IN_PROGRESS"), COMPLETED("COMPLETED");
+	ADDED("ADDED"), IN_PROGRESS("IN_PROGRESS"), COMPLETED("COMPLETED"), PAUSED("PAUSED"), CANCELLED("CANCELLED");
 
 	private String status;
 

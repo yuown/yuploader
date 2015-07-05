@@ -10,7 +10,11 @@
 	<context:property-placeholder location="yuploader.properties" />
 	<context:component-scan base-package="yuown.yuploader" use-default-filters="true" />
 
-    <bean id="client" class="yuown.yuploader.ui.Client" />
+    <bean id="client" class="yuown.yuploader.ui.Client" scope="singleton" />
+<!--     <bean id="yuploaderWorker" class="yuown.yuploader.ui.YuploaderWorker" /> -->
+    <bean id="userObject" class="yuown.yuploader.model.User" scope="singleton" />
+    
+    <bean id="ftpClient" class="org.apache.commons.net.ftp.FTPClient" scope="singleton" />
 
 	<bean id="ftpHelperBean" class="yuown.yuploader.ftp.FTPHelperBean" scope="singleton">
 		<property name="ftpUserName" value="${ftp.conn.user}"></property>
@@ -22,8 +26,7 @@
 		<property name="fileType" value="${ftp.fileType}" />
 		<property name="bufferSize" value="${ftp.bufferSize}" />
 	</bean>
-	<bean id="helper" class="yuown.yuploader.util.Helper"></bean>
-<!-- 	<bean id="client" class="yuown.yuploader.ui.Client"></bean> -->
+	<bean id="helper" class="yuown.yuploader.util.Helper" scope="singleton"></bean>
 	
 	<bean id="yuploaderDs" class="org.apache.commons.dbcp2.BasicDataSource">
 		<property name="driverClassName" value="${db.conn.driver}" />

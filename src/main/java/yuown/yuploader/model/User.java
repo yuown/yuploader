@@ -1,7 +1,10 @@
 package yuown.yuploader.model;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
+@Component
 public class User {
 
 	private String uname;
