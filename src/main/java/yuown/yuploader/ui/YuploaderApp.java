@@ -281,7 +281,7 @@ public class YuploaderApp extends JDialog {
         
         AutowireCapableBeanFactory aw = context.getAutowireCapableBeanFactory();
         client = aw.getBean(Client.class);
-        client.setContext(context);
+        client.setAutoWireCapableBeanFactory(aw);
         userObject = aw.getBean("userObject", User.class);
         InputStream inputStream = getClass().getClassLoader().getResourceAsStream("yuploader.properties");
         
