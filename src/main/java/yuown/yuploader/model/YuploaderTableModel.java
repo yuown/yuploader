@@ -1,16 +1,18 @@
 package yuown.yuploader.model;
 
+import javax.swing.JOptionPane;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import yuown.yuploader.ftp.StreamListener;
-import yuown.yuploader.ui.PauseResumeButton;
-
-import javax.swing.JTable;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableColumn;
+import yuown.yuploader.ui.Client;
+import yuown.yuploader.util.Helper;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
@@ -22,15 +24,21 @@ public class YuploaderTableModel extends DefaultTableModel {
     private static final long serialVersionUID = 3855594580035551957L;
 
     private JTable table;
+    
+    @Autowired
+    private Client client;
 
-    Class[] columnTypes = { FileObject.class, String.class, String.class, String.class, Object.class, String.class, PauseResumeButton.class };
+    Class[] columnTypes = { FileObject.class, String.class, String.class, String.class, Object.class, String.class };
 
-    boolean[] columnEditables = { false, false, false, false, false, false, true };
+    boolean[] columnEditables = { false, false, false, false, false, false };
+    
+    @Autowired
+    private Helper helper;
 
     private AutowireCapableBeanFactory aw;
 
     public YuploaderTableModel() {
-        super(new Object[0][], new String[] { "File Name", "Size", "Progress", "Status", "Speed", "Time (Seconds)", "Pause" });
+        super(new Object[0][], new String[] { "File Name", "Size", "Progress", "Status", "Speed", "Time (Seconds)"});
     }
 
     public Class getColumnClass(int columnIndex) {
@@ -43,14 +51,7 @@ public class YuploaderTableModel extends DefaultTableModel {
 
     public void addRow(FileObject fileObject) {
         if (!contains(fileObject)) {
-            PauseResumeButton pauseResume = aw.createBean(PauseResumeButton.class);
-            pauseResume.setText("Pause");
-            pauseResume.addActionListener(aw.createBean(StreamListener.class));
-            TableColumn pauseColumn = table.getColumn("Pause");
-            pauseColumn.setCellRenderer(pauseResume);
-            pauseColumn.setCellEditor(pauseResume);
-            addRow(new Object[] { fileObject, fileObject.getKBSize(), fileObject.getProgress(), fileObject.getStatus(), "", "", pauseResume });
-            table.updateUI();
+            addRow(new Object[] { fileObject, fileObject.getKBSize(), fileObject.getProgress(), fileObject.getStatus() });
         }
     }
 
@@ -70,12 +71,21 @@ public class YuploaderTableModel extends DefaultTableModel {
         int[] selectedRows = table.getSelectedRows();
         for (int i = selectedRows.length - 1; i >= 0; i--) {
             FileObject fileSelected = (FileObject) getValueAt(selectedRows[i], 0);
-            if (Status.IN_PROGRESS != fileSelected.getStatus() && Status.PAUSED != fileSelected.getStatus()) {
-                removeRow(selectedRows[i]);
-                table.updateUI();
+            if (StringUtils.equals(Status.IN_PROGRESS.toString(), fileSelected.getStatus().toString())) {
+            	int choice = helper.confirm(client, "Are you Sure to Delete Uploading a File which is in " + fileSelected.getStatus().toString() + " State ?");
+            	if(choice == JOptionPane.YES_OPTION) {
+        			removeConfirmed(selectedRows, i);
+            	}
+            } else {
+            	removeConfirmed(selectedRows, i);
             }
         }
     }
+
+	private void removeConfirmed(int[] selectedRows, int i) {
+		client.setStart(client.getStart() - 1);
+		removeRow(selectedRows[i]);
+	}
 
     public void setTable(JTable table) {
         this.table = table;

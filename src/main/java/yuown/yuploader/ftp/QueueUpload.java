@@ -1,5 +1,13 @@
 package yuown.yuploader.ftp;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
+import javax.swing.SwingWorker;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.io.CopyStreamException;
@@ -13,15 +21,6 @@ import yuown.yuploader.model.FileObject;
 import yuown.yuploader.model.Status;
 import yuown.yuploader.model.YuploaderTableModel;
 import yuown.yuploader.ui.Client;
-import yuown.yuploader.ui.PauseResumeButton;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
-import javax.swing.SwingWorker;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -37,13 +36,18 @@ public class QueueUpload extends SwingWorker<Integer, Integer> {
     private Client client;
 
     private boolean paused = false;
+    
+    @Autowired
+    private StreamListener streamListener;
 
     private AutowireCapableBeanFactory aw;
+
+	private int start = 0;
 
     public void submitToQueue() {
         client.setProgress(true);
         int rowCount = yuploaderTableModel.getRowCount();
-        for (int i = 0; i < rowCount; i++) {
+        for (int i = start ; i < rowCount; i++) {
             final int row = i;
             final FileObject fileObject = (FileObject) yuploaderTableModel.getValueAt(row, 0);
             File f = new File(fileObject.getFullPath());
@@ -57,11 +61,8 @@ public class QueueUpload extends SwingWorker<Integer, Integer> {
                     } else {
                         dest = this.ftpClient.storeFileStream(fileObject.getFileName());
                     }
-                    
+                    streamListener.setRow(i);
                     InputStream source = new FileInputStream(f);
-                    PauseResumeButton button = (PauseResumeButton) yuploaderTableModel.getValueAt(row, 6);
-                    StreamListener listener = (StreamListener) (button).getActionListeners()[0];
-                    listener.setRow(row);
                     boolean flush = true;
                     int bytes;
                     long total = 0;
@@ -69,32 +70,49 @@ public class QueueUpload extends SwingWorker<Integer, Integer> {
 
                     try {
                         while ((bytes = source.read(buffer)) != -1) {
-                            if (fileObject.getOffset() + bytes >= total) {
+                            if (total >= fileObject.getOffset()) {
                                 dest.write(buffer, 0, bytes);
                             }
                             if (flush) {
                                 dest.flush();
                             }
                             total += bytes;
-                            if (fileObject.getOffset() + bytes >= total) {
-                                listener.bytesTransferred(total, bytes);
+                            if (total - bytes >= fileObject.getOffset()) {
+                                boolean paused = streamListener.bytesTransferred(total, bytes);
+                                if(paused) {
+                                	client.hidePause(true);
+                                	client.setLastAccess(System.currentTimeMillis());
+                                	client.setStart(i);
+                                	return;
+                                }
                             }
                         }
                     } catch (IOException e) {
                         throw new CopyStreamException("IOException caught while copying.", total, e);
                     } finally {
                         source.close();
-                        dest.close();
+                        if(dest != null) {
+                        	dest.close();
+                        }
                         this.ftpClient.completePendingCommand();
                     }
                 }
-            } catch (Exception e1) {
-                e1.printStackTrace();
-            }
+			} catch (Exception e1) {
+				fileObject.setOffset(0);
+				i--;
+				try {
+					this.ftpClient.completePendingCommand();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				e1.printStackTrace();
+			}
         }
-        client.toggleLoginCtrls(true);
+        client.hidePause(true);
         client.setLastAccess(System.currentTimeMillis());
         client.setProgress(false);
+        client.setStart(0);
+        return;
     }
 
     public void setPaused(boolean paused) {
@@ -111,4 +129,8 @@ public class QueueUpload extends SwingWorker<Integer, Integer> {
     public void setAutoWireCapableBeanFactory(AutowireCapableBeanFactory aw) {
         this.aw = aw;
     }
+
+	public void setStart(int start2) {
+		this.start = start2;
+	}
 }

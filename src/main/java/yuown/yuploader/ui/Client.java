@@ -10,6 +10,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import yuown.yuploader.ftp.QueueUpload;
+import yuown.yuploader.ftp.StreamListener;
 import yuown.yuploader.model.FileObject;
 import yuown.yuploader.model.Status;
 import yuown.yuploader.model.User;
@@ -77,6 +78,8 @@ public class Client extends JFrame {
     private JButton btnRemoveSelectedFiles;
     private JButton btnUploadFiles;
     private JButton btnlogout;
+    private JButton btnPause;
+    private JButton btnCancelUpload;
 
     @Autowired
     private Helper helper;
@@ -91,6 +94,9 @@ public class Client extends JFrame {
 
     @Autowired
     private QueueUpload queueUpload;
+    
+    @Autowired
+    private StreamListener streamListener;
 
     private AutowireCapableBeanFactory aw;
 
@@ -121,10 +127,12 @@ public class Client extends JFrame {
     private long ftpTimeout;
 
     private long lastAccess;
+    
+    private int start = 0;
 
-    public Client() {
-        //		init();
-    }
+	public Client() {
+//		init();
+	}
 
     @PostConstruct
     public void init() {
@@ -271,15 +279,16 @@ public class Client extends JFrame {
         contentPane.add(btnAddFiles);
 
         btnUploadFiles = new JButton("Upload Files");
+        sl_contentPane.putConstraint(SpringLayout.NORTH, btnUploadFiles, 0, SpringLayout.NORTH, btnAddFiles);
         btnUploadFiles.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 submitToUpload();
             }
         });
-        sl_contentPane.putConstraint(SpringLayout.NORTH, btnUploadFiles, 5, SpringLayout.SOUTH, logoPanel);
         contentPane.add(btnUploadFiles);
 
         btnRemoveSelectedFiles = new JButton("Remove Selected Files");
+        sl_contentPane.putConstraint(SpringLayout.NORTH, btnRemoveSelectedFiles, 0, SpringLayout.NORTH, btnAddFiles);
         btnRemoveSelectedFiles.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 removeSelectedFiles();
@@ -287,10 +296,21 @@ public class Client extends JFrame {
         });
         sl_contentPane.putConstraint(SpringLayout.WEST, btnUploadFiles, 5, SpringLayout.EAST, btnRemoveSelectedFiles);
         sl_contentPane.putConstraint(SpringLayout.WEST, btnRemoveSelectedFiles, 5, SpringLayout.EAST, btnAddFiles);
-        sl_contentPane.putConstraint(SpringLayout.NORTH, btnRemoveSelectedFiles, 5, SpringLayout.SOUTH, logoPanel);
         contentPane.add(btnRemoveSelectedFiles);
+        
+        btnPause = new JButton("Pause");
+        sl_contentPane.putConstraint(SpringLayout.NORTH, btnPause, 0, SpringLayout.NORTH, btnAddFiles);
+        sl_contentPane.putConstraint(SpringLayout.WEST, btnPause, 5, SpringLayout.EAST, btnUploadFiles);
+        btnPause.addActionListener(streamListener);
+        contentPane.add(btnPause);
+        
+        btnCancelUpload = new JButton("Cancel Upload");
+        sl_contentPane.putConstraint(SpringLayout.NORTH, btnCancelUpload, 0, SpringLayout.NORTH, btnAddFiles);
+        sl_contentPane.putConstraint(SpringLayout.WEST, btnCancelUpload, 5, SpringLayout.EAST, btnPause);
+        contentPane.add(btnCancelUpload);
 
         fileChooser = new JFileChooser();
+        hidePause(true);
 
         System.out.println("2. Client: " + this.hashCode());
     }
@@ -299,21 +319,32 @@ public class Client extends JFrame {
         yuploaderTableModel.removeSelectedRows();
     }
 
-    protected void submitToUpload() {
+    public void submitToUpload() {
         checkTimeoutAndConnect();
-        createMissingDirectories();
 
-        queueUpload = aw.createBean(QueueUpload.class);
-        queueUpload.setAutoWireCapableBeanFactory(aw);
-        toggleLoginCtrls(false);
-        queueUpload.execute();
+        startOrPause();
     }
 
-    public void toggleLoginCtrls(boolean b) {
+    public void startOrPause() {
+    	queueUpload = aw.createBean(QueueUpload.class);
+        queueUpload.setAutoWireCapableBeanFactory(aw);
+        queueUpload.setStart(start);
+        hidePause(false);
+        streamListener.setPaused(false);
+        queueUpload.execute();		
+	}
+
+	public void toggleLoginCtrls(boolean b) {
         btnAddFiles.setEnabled(b);
         btnUploadFiles.setEnabled(b);
         btnRemoveSelectedFiles.setEnabled(b);
         btnlogout.setEnabled(b);
+    }
+    
+    public void hidePause(boolean b) {
+    	toggleLoginCtrls(b);
+        btnPause.setVisible(!b);
+        btnCancelUpload.setVisible(!b);
     }
 
     protected void logout(ActionEvent e) {
@@ -403,6 +434,7 @@ public class Client extends JFrame {
                         }
                     }
                 }
+                createMissingDirectories();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -441,4 +473,16 @@ public class Client extends JFrame {
     public void setLastAccess(long currentTimeMillis) {
         this.lastAccess = currentTimeMillis;
     }
+
+	public void setStart(int start) {
+		if(this.start < 0) {
+			this.start = 0;
+		} else {
+			this.start = start;
+		}
+	}
+
+	public int getStart() {
+		return start;
+	}
 }
