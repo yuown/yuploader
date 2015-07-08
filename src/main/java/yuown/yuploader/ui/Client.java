@@ -323,10 +323,10 @@ public class Client extends JFrame {
 	}
 
 	public void startOrPause() {
+	    hidePause(false);
+        streamListener.setPaused(false);
 		queueUpload = aw.createBean(QueueUpload.class);
 		queueUpload.setStart(start);
-		hidePause(false);
-		streamListener.setPaused(false);
 		queueUpload.execute();
 	}
 
@@ -467,17 +467,5 @@ public class Client extends JFrame {
 
 	public void setLastAccess(long currentTimeMillis) {
 		this.lastAccess = currentTimeMillis;
-	}
-
-	public void setStart(int start) {
-		if (this.start < 0) {
-			this.start = 0;
-		} else {
-			this.start = start;
-		}
-	}
-
-	public int getStart() {
-		return start;
 	}
 }

@@ -1,14 +1,5 @@
 package yuown.yuploader.ftp;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.BindException;
-
-import javax.swing.SwingWorker;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPConnectionClosedException;
@@ -22,6 +13,16 @@ import yuown.yuploader.model.Status;
 import yuown.yuploader.model.YuploaderTableModel;
 import yuown.yuploader.ui.Client;
 import yuown.yuploader.util.Helper;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.BindException;
+
+import javax.swing.SwingWorker;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -43,14 +44,43 @@ public class QueueUpload extends SwingWorker<Integer, Integer> {
 	
 	@Autowired
 	private Helper helper;
+	
+	private boolean flush = true;
 
-	private int start = 0;
+    private int bufferSize = 1024;
 
 	public void submitToQueue() {
 	    int rowCount = yuploaderTableModel.getRowCount();
 		
 	    for (int row = 0; row < rowCount; row++) {
 	        final FileObject file = (FileObject) yuploaderTableModel.getValueAt(row, 0);
+	        File f = new File(file.getFullPath());
+	        if ((f.exists()) && isEligibleToStartUpload(file)) {
+	            OutputStream writer = getWriter(file);
+	            if(null != writer) {
+	                markUploadInProgress(file, row);
+	                InputStream reader = getReader(f);
+	                int bytes;
+                    long total = 0;
+                    byte[] buffer = new byte[bufferSize];
+                    while((bytes = readerData(reader, buffer)) != -1) {
+                        if(reachedOffset(file, total)) {
+                            try {
+                                writer.write(buffer, 0, bytes);
+                                total += bytes;
+                                paused = streamListener.bytesTransferred(total, bytes);
+                                if (paused) {
+                                    client.hidePause(paused);
+                                    client.setLastAccess(System.currentTimeMillis());
+                                    return;
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+	            }
+	        }
 	    }
 		
 		
@@ -61,7 +91,7 @@ public class QueueUpload extends SwingWorker<Integer, Integer> {
 			final FileObject fileObject = (FileObject) yuploaderTableModel.getValueAt(row, 0);
 			File f = new File(fileObject.getFullPath());
 			try {
-				if ((f.exists()) && !StringUtils.equals(Status.COMPLETED.toString(), fileObject.getStatus().toString())) {
+				if ((f.exists()) && isEligibleToStartUpload(fileObject)) {
 					yuploaderTableModel.setValueAt(Status.IN_PROGRESS, row, 3);
 					fileObject.setStatus(Status.IN_PROGRESS);
 					OutputStream dest = null;
@@ -75,14 +105,14 @@ public class QueueUpload extends SwingWorker<Integer, Integer> {
 					}
 					System.out.println("Got access to Output Stream");
 					streamListener.setRow(i);
-					InputStream source = new FileInputStream(f);
+					InputStream source = getReader(f);
 					boolean flush = true;
 					int bytes;
 					long total = 0;
 					byte[] buffer = new byte[1024];
 
 					try {
-						while (!paused && (bytes = source.read(buffer)) != -1) {
+						while (!paused && (bytes = readerData(source, buffer)) != -1) {
 							if (total >= fileObject.getOffset()) {
 								dest.write(buffer, 0, bytes);
 							}
@@ -95,7 +125,6 @@ public class QueueUpload extends SwingWorker<Integer, Integer> {
 								if (paused) {
 									client.hidePause(paused);
 									client.setLastAccess(System.currentTimeMillis());
-									client.setStart(i);
 									return;
 								}
 							}
@@ -147,9 +176,56 @@ public class QueueUpload extends SwingWorker<Integer, Integer> {
 		}
 		client.hidePause(true);
 		client.setLastAccess(System.currentTimeMillis());
-		client.setStart(0);
 		return;
 	}
+
+    private boolean reachedOffset(FileObject file, long total) {
+        return total >= file.getOffset();
+    }
+
+    protected int readerData(InputStream reader, byte[] buffer) {
+        int readSize = -1;
+        try {
+            readSize = reader.read(buffer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return readSize;
+    }
+
+    protected FileInputStream getReader(File f) {
+        FileInputStream reader = null;
+        try {
+            reader = new FileInputStream(f);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return reader;
+    }
+
+    private OutputStream getWriter(FileObject file) {
+        OutputStream dest = null;
+        try {
+            if (file.getOffset() > 0) {
+                dest = ftpClient.appendFileStream(file.getFileName());
+            } else {
+                dest = ftpClient.storeFileStream(file.getFileName());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return dest;
+    }
+
+    private void markUploadInProgress(FileObject file, int row) {
+        yuploaderTableModel.setValueAt(Status.IN_PROGRESS, row, 3);
+        file.setStatus(Status.IN_PROGRESS);
+        streamListener.setRow(row);
+    }
+
+    protected boolean isEligibleToStartUpload(final FileObject file) {
+        return !StringUtils.equals(Status.COMPLETED.toString(), file.getStatus().toString());
+    }
 
 	public void setPaused(boolean paused) {
 		this.paused = paused;
@@ -159,9 +235,5 @@ public class QueueUpload extends SwingWorker<Integer, Integer> {
 	protected Integer doInBackground() throws Exception {
 		submitToQueue();
 		return 0;
-	}
-
-	public void setStart(int start) {
-		this.start = start;
 	}
 }
