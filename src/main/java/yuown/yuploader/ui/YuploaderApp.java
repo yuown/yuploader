@@ -17,6 +17,7 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SpringLayout;
+import javax.swing.SwingWorker;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
 
@@ -45,6 +46,7 @@ public class YuploaderApp extends JDialog {
     private final JPanel loginPanel = new JPanel();
     private JTextField txtUserName;
     private JPasswordField txtPassword;
+    private JButton btnLogin;
 
     private JdbcTemplate jdbcTemplate;
     private Helper helper;
@@ -118,7 +120,7 @@ public class YuploaderApp extends JDialog {
         springLayout.putConstraint(SpringLayout.NORTH, loginPanel, 10, SpringLayout.SOUTH, headerPanel);
         springLayout.putConstraint(SpringLayout.WEST, headerPanel, 10, SpringLayout.WEST, getContentPane());
         
-        JButton btnLogin = new JButton("Login");
+        btnLogin = new JButton("Login");
         sl_loginPanel.putConstraint(SpringLayout.NORTH, btnLogin, 10, SpringLayout.SOUTH, txtPassword);
         sl_loginPanel.putConstraint(SpringLayout.EAST, btnLogin, 0, SpringLayout.EAST, txtPassword);
         btnLogin.addActionListener(new ActionListener() {
@@ -235,36 +237,49 @@ public class YuploaderApp extends JDialog {
     //    	return retrievedConfig;
     //	}
 
-	protected void login(ActionEvent e) {
-		String user = txtUserName.getText();
-		String passwd = new String(txtPassword.getPassword());
-		if (StringUtils.isNotBlank(user) && StringUtils.isNotBlank(passwd)) {
-			try {
-				List<User> users = jdbcTemplate.query(YuownUtils.SELECT_USER_QUERY, new String[] { txtUserName.getText() }, new UserMapper());
-				if (!users.isEmpty()) {
-					User userEntity = users.get(0);
-					if (StringUtils.equalsIgnoreCase(userEntity.getUname(), user) && StringUtils.equals(userEntity.getPasswd(), passwd)) {
-						if (!userEntity.isEnabled()) {
-							helper.alert(this, "Your User is Disabled, Please Contact Administrator");
-						} else {
-							this.userObject.setUname(userEntity.getUname());
-							launchApp();
-							this.setVisible(false);
-						}
-					} else {
-						helper.alert(this, "Your Password is wrong, Please check");
-					}
-				} else {
-					helper.alert(this, "Your Username is wrong, Please check");
-				}
-			} catch (CannotGetJdbcConnectionException cgjdbcexp) {
-				helper.alert(this, "Failed to Connect to Database Server, Please Contact Administrator");
-				cgjdbcexp.printStackTrace();
-			}
-		} else {
-			helper.alert(this, "Username and Password are mandatory, Please Enter");
-		}
-	}
+    protected void login(ActionEvent e) {
+        final String user = txtUserName.getText();
+        final String passwd = new String(txtPassword.getPassword());
+        final YuploaderApp me = this;
+        new SwingWorker<Integer, Integer>() {
+            @Override
+            protected Integer doInBackground() throws Exception {
+                if (StringUtils.isNotBlank(user) && StringUtils.isNotBlank(passwd)) {
+                    try {
+                        txtUserName.setEnabled(false);
+                        txtPassword.setEnabled(false);
+                        btnLogin.setEnabled(false);
+                        List<User> users = jdbcTemplate.query(YuownUtils.SELECT_USER_QUERY, new String[] { user }, new UserMapper());
+                        if (!users.isEmpty()) {
+                            User userEntity = users.get(0);
+                            if (StringUtils.equalsIgnoreCase(userEntity.getUname(), user) && StringUtils.equals(userEntity.getPasswd(), passwd)) {
+                                if (!userEntity.isEnabled()) {
+                                    helper.alert(me, "Your User is Disabled, Please Contact Administrator");
+                                } else {
+                                    me.userObject.setUname(userEntity.getUname());
+                                    launchApp();
+                                    me.setVisible(false);
+                                }
+                            } else {
+                                helper.alert(me, "Your Password is wrong, Please check");
+                            }
+                        } else {
+                            helper.alert(me, "Your Username is wrong, Please check");
+                        }
+                    } catch (CannotGetJdbcConnectionException cgjdbcexp) {
+                        helper.alert(me, "Failed to Connect to Database Server, Please Contact Administrator");
+                        cgjdbcexp.printStackTrace();
+                    }
+                } else {
+                    helper.alert(me, "Username and Password are mandatory, Please Enter");
+                }
+                txtUserName.setEnabled(true);
+                txtPassword.setEnabled(true);
+                btnLogin.setEnabled(true);
+                return 0;
+            }
+        }.execute();
+    }
 
 	private void launchApp() {
 		System.out.println("3. Client: " + client.hashCode());
@@ -283,7 +298,7 @@ public class YuploaderApp extends JDialog {
         client = aw.getBean(Client.class);
         client.setAutoWireCapableBeanFactory(aw);
         userObject = aw.getBean("userObject", User.class);
-        InputStream inputStream = getClass().getClassLoader().getResourceAsStream("yuploader.properties");
+        InputStream inputStream = getClass().getClassLoader().getResourceAsStream("yuploader-internet.properties");
         
 		if (inputStream != null) {
 			try {

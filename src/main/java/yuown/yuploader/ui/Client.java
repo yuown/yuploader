@@ -308,7 +308,7 @@ public class Client extends JFrame {
 
 		fileChooser = new JFileChooser();
 		hidePause(true);
-
+		checkTimeoutAndConnect();
 		System.out.println("2. Client: " + this.hashCode());
 	}
 
@@ -317,7 +317,7 @@ public class Client extends JFrame {
 	}
 
 	public void submitToUpload() {
-		if(checkTimeoutAndConnect()) {
+		if(connected) {
 			startOrPause();
 		}
 	}

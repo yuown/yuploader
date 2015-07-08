@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>yuown</groupId>
 	<artifactId>yuploader</artifactId>
-	<version>1.0</version>
+	<version>4.0</version>
 	<name>yuploader</name>
 	<description>Upload Files to a Dedicated Server through FTP</description>
 
@@ -70,7 +70,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>yuown.yuploader.ui.Login</mainClass>
+							<mainClass>yuown.yuploader.ui.YuploaderApp</mainClass>
 							<addClasspath>true</addClasspath>
 						</manifest>
 						<manifestEntries>
@@ -128,7 +128,7 @@
 						<outputFile>yuploader.jnlp</outputFile> <!-- defaults to launch.jnlp -->
 						<!-- used to automatically identify the jar containing the main class. -->
 						<!-- this is perhaps going to change -->
-						<mainClass>yuown.yuploader.ui.Login</mainClass>
+						<mainClass>yuown.yuploader.ui.YuploaderApp</mainClass>
 					</jnlp>
 					<!-- SIGNING -->
 					<!-- defining this will automatically sign the jar and its dependencies, 

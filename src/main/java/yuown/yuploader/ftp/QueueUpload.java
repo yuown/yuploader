@@ -47,8 +47,16 @@ public class QueueUpload extends SwingWorker<Integer, Integer> {
 	private int start = 0;
 
 	public void submitToQueue() {
-		int rowCount = yuploaderTableModel.getRowCount();
+	    int rowCount = yuploaderTableModel.getRowCount();
+		
+	    for (int row = 0; row < rowCount; row++) {
+	        final FileObject file = (FileObject) yuploaderTableModel.getValueAt(row, 0);
+	    }
+		
+		
+		
 		for (int i = 0; i < rowCount; i++) {
+		    System.out.println("Current: " + i);
 			final int row = i;
 			final FileObject fileObject = (FileObject) yuploaderTableModel.getValueAt(row, 0);
 			File f = new File(fileObject.getFullPath());
@@ -57,11 +65,15 @@ public class QueueUpload extends SwingWorker<Integer, Integer> {
 					yuploaderTableModel.setValueAt(Status.IN_PROGRESS, row, 3);
 					fileObject.setStatus(Status.IN_PROGRESS);
 					OutputStream dest = null;
+					System.out.println("Getting access to Output Stream");
 					if (fileObject.getOffset() > 0) {
+					    System.out.println("Getting access to Append");
 						dest = this.ftpClient.appendFileStream(fileObject.getFileName());
 					} else {
+					    System.out.println("Getting access to New");
 						dest = this.ftpClient.storeFileStream(fileObject.getFileName());
 					}
+					System.out.println("Got access to Output Stream");
 					streamListener.setRow(i);
 					InputStream source = new FileInputStream(f);
 					boolean flush = true;
