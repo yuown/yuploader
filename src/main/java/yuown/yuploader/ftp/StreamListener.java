@@ -3,6 +3,10 @@ package yuown.yuploader.ftp;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.io.CopyStreamEvent;
+import org.apache.commons.net.io.CopyStreamListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
@@ -16,13 +20,16 @@ import yuown.yuploader.util.YuownUtils;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
-public class StreamListener implements ActionListener {
+public class StreamListener implements CopyStreamListener, ActionListener {
 
 	@Autowired
 	private YuploaderTableModel yuploaderTableModel;
 
 	@Autowired
 	private Client client;
+
+	@Autowired
+	private FTPClient ftpClient;
 
 	private boolean paused = false;
 
@@ -35,10 +42,51 @@ public class StreamListener implements ActionListener {
 
 	private FileObject fileObject;
 
+	private QueueUpload worker;
+
 	public StreamListener() {
 	}
 
-	public boolean bytesTransferred(long totalBytesTransferred, int bytesTransferred) {
+	private void updateProgress(int row) {
+		double currentKBRate = YuownUtils.longTo2Decimals(this.bytes, 1024);
+		if (currentKBRate < 1024) {
+			yuploaderTableModel.setValueAt(currentKBRate + " KB/s", row, 4);
+		} else {
+			double currentMBRate = YuownUtils.longTo2Decimals(currentKBRate, 1024);
+			yuploaderTableModel.setValueAt(currentMBRate + " MB/s", row, 4);
+		}
+//		fileObject.setTotalTime(fileObject.getTotalTime() + (this.time - this.startTime));
+		yuploaderTableModel.setValueAt(YuownUtils.longTo2Decimals(this.time - this.startTime, 1000), row, 5);
+		yuploaderTableModel.setValueAt(this.percentCompleted + " %", row, 2);
+	}
+
+	public void setRow(int row2) {
+		this.row = row2;
+		fileObject = (FileObject) yuploaderTableModel.getValueAt(row, 0);
+		this.startTime = System.currentTimeMillis();
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		paused = true;
+		client.hidePause(paused);
+		if(StringUtils.equals("Cancel Upload", e.getActionCommand())) {
+			System.out.println("Cancelled Upload");
+			fileObject.setOffset(0);
+		}
+	}
+
+	public void setPaused(boolean b) {
+		this.paused = b;
+	}
+
+	@Override
+	public void bytesTransferred(CopyStreamEvent event) {
+		bytesTransferred(event.getTotalBytesTransferred(), event.getBytesTransferred(), event.getStreamSize());
+	}
+
+	@Override
+	public void bytesTransferred(long totalBytesTransferred, int bytesTransferred, long streamSize) {
 		long s = fileObject.getSize();
 		this.percentCompleted = YuownUtils.longTo2Decimals(totalBytesTransferred * 100, s);
 
@@ -56,37 +104,12 @@ public class StreamListener implements ActionListener {
 			fileObject.setStatus(Status.COMPLETED);
 			yuploaderTableModel.setValueAt(Status.COMPLETED, row, 3);
 		}
-		if (paused) {
-			fileObject.setOffset(totalBytesTransferred);
-		}
-		return paused;
-	}
-
-	private void updateProgress(int row) {
-		double currentKBRate = YuownUtils.longTo2Decimals(this.bytes, 1024);
-		if (currentKBRate < 1024) {
-			yuploaderTableModel.setValueAt(currentKBRate + " KB/s", row, 4);
-		} else {
-			double currentMBRate = YuownUtils.longTo2Decimals(currentKBRate, 1024);
-			yuploaderTableModel.setValueAt(currentMBRate + " MB/s", row, 4);
-		}
-		yuploaderTableModel.setValueAt(YuownUtils.longTo2Decimals(this.time - this.startTime, 1000), row, 5);
-		yuploaderTableModel.setValueAt(this.percentCompleted + " %", row, 2);
-	}
-
-	public void setRow(int row2) {
-		this.row = row2;
-		fileObject = (FileObject) yuploaderTableModel.getValueAt(row, 0);
-		this.startTime = System.currentTimeMillis();
-	}
-
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		paused = true;
+		fileObject.setOffset(totalBytesTransferred);
+		worker.setPaused(paused);
 		client.hidePause(paused);
 	}
 
-	public void setPaused(boolean b) {
-		this.paused = b;
+	public void setWorker(QueueUpload queueUpload) {
+		this.worker = queueUpload;
 	}
 }

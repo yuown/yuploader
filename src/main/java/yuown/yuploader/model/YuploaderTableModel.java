@@ -83,7 +83,6 @@ public class YuploaderTableModel extends DefaultTableModel {
     }
 
 	private void removeConfirmed(int[] selectedRows, int i) {
-		client.setStart(client.getStart() - 1);
 		removeRow(selectedRows[i]);
 	}
 

@@ -18,6 +18,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.SpringLayout;
 import javax.swing.SwingConstants;
+import javax.swing.SwingWorker;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
 
@@ -304,12 +305,24 @@ public class Client extends JFrame {
 		btnCancelUpload = new JButton("Cancel Upload");
 		sl_contentPane.putConstraint(SpringLayout.NORTH, btnCancelUpload, 0, SpringLayout.NORTH, btnAddFiles);
 		sl_contentPane.putConstraint(SpringLayout.WEST, btnCancelUpload, 5, SpringLayout.EAST, btnPause);
+		btnCancelUpload.addActionListener(streamListener);
 		contentPane.add(btnCancelUpload);
 
 		fileChooser = new JFileChooser();
 		hidePause(true);
-		checkTimeoutAndConnect();
-		System.out.println("2. Client: " + this.hashCode());
+		connectInBackground();
+	}
+
+	private void connectInBackground() {
+		System.out.println("Connect to FTP Server in Background.1");
+		new SwingWorker<Integer, Integer>() {
+			@Override
+			protected Integer doInBackground() throws Exception {
+				System.out.println("Connect to FTP Server in Background.2");
+				checkTimeoutAndConnect();
+				return 0;
+			}
+		}.execute();
 	}
 
 	protected void removeSelectedFiles() {
@@ -317,8 +330,12 @@ public class Client extends JFrame {
 	}
 
 	public void submitToUpload() {
-		if(connected) {
+		if(connected || (System.currentTimeMillis() - lastAccess < ftpTimeout)) {
+			System.out.println("submitToUpload: connected?: " + connected);
+			System.out.println("submitToUpload: Timeout?: " + (System.currentTimeMillis() - lastAccess < ftpTimeout));
 			startOrPause();
+		} else {
+			connectInBackground();
 		}
 	}
 
@@ -326,7 +343,6 @@ public class Client extends JFrame {
 	    hidePause(false);
         streamListener.setPaused(false);
 		queueUpload = aw.createBean(QueueUpload.class);
-		queueUpload.setStart(start);
 		queueUpload.execute();
 	}
 
@@ -407,15 +423,19 @@ public class Client extends JFrame {
 
 	public boolean checkTimeoutAndConnect() {
 		if (!isConnected() || (System.currentTimeMillis() - lastAccess > ftpTimeout)) {
+			System.out.println("Connected: " + isConnected());
+			System.out.println("Timeout ?: " + (System.currentTimeMillis() - lastAccess > ftpTimeout));
 			try {
 				ftpClient.connect(ftpHost);
 				int reply = ftpClient.getReplyCode();
 				if (!FTPReply.isPositiveCompletion(reply)) {
 					ftpClient.disconnect();
 					System.err.println("FTP server refused connection.");
+					helper.alert(this, "FTP server refused connection.");
 				} else {
 					if (!ftpClient.login(ftpUsername, ftpPassword)) {
 						ftpClient.logout();
+						System.out.println("Problem with FTP Server Credentials, Contact Admin.");
 						helper.alert(this, "Problem with FTP Server Credentials, Contact Admin.");
 					} else {
 						try {
@@ -433,6 +453,7 @@ public class Client extends JFrame {
 				createMissingDirectories();
 			} catch (Exception e) {
 				connected = false;
+				System.out.println("Check your Network connectivity, looks like you are not connected to Internet!");
 				helper.alert(this, "Check your Network connectivity, looks like you are not connected to Internet!");
 				hidePause(true);
 				e.printStackTrace();
