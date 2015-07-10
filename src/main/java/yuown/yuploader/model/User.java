@@ -5,17 +5,14 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class User {
-
 	private String uname;
-
 	private String passwd;
-
 	private boolean enabled;
-
 	private UserType userType;
+	private String fullName;
 
 	public String getUname() {
-		return uname;
+		return this.uname;
 	}
 
 	public void setUname(String uname) {
@@ -23,7 +20,7 @@ public class User {
 	}
 
 	public String getPasswd() {
-		return passwd;
+		return this.passwd;
 	}
 
 	public void setPasswd(String passwd) {
@@ -31,7 +28,7 @@ public class User {
 	}
 
 	public boolean isEnabled() {
-		return enabled;
+		return this.enabled;
 	}
 
 	public void setEnabled(boolean enabled) {
@@ -39,7 +36,7 @@ public class User {
 	}
 
 	public UserType getUserType() {
-		return userType;
+		return this.userType;
 	}
 
 	public void setUserType(UserType userType) {
@@ -57,4 +54,11 @@ public class User {
 		}
 	}
 
+	public void setFullName(String fullName) {
+		this.fullName = fullName;
+	}
+
+	public String getFullName() {
+		return this.fullName;
+	}
 }
