@@ -341,7 +341,6 @@ public class YuploaderApp extends JDialog {
     }
 
     private void launchApp() {
-        System.out.println("3. Client: " + client.hashCode());
         if (!exceptionWhileTheme) {
             setTheme(client, ((Theme) themeList.getSelectedItem()).getClassName());
         }
