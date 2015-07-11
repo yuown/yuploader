@@ -313,6 +313,7 @@ public class Client extends JFrame {
 
 		fileChooser = new JFileChooser();
 		hidePause(true);
+		toggleLoginCtrls(true);
 	}
 
 	public void connectInBackground() {
@@ -330,14 +331,12 @@ public class Client extends JFrame {
 	}
 
 	public void submitToUpload() {
-		checkTimeoutAndConnect();
+		connectInBackground();
 		startOrPause();
 	}
 
 	public void startOrPause() {
 		if (!inProgress) {
-			hidePause(false);
-			streamListener.setPaused(false);
 			queueUpload = aw.createBean(QueueUpload.class);
 			queueUpload.execute();
 		}
@@ -351,7 +350,6 @@ public class Client extends JFrame {
 	}
 
 	public void hidePause(boolean b) {
-		toggleLoginCtrls(b);
 		btnPause.setVisible(!b);
 		btnCancelUpload.setVisible(!b);
 	}
@@ -365,7 +363,6 @@ public class Client extends JFrame {
 		try {
 			ftpClient.logout();
 			ftpClient.disconnect();
-//			ftpClient = aw.createBean(FTPClient.class);
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
@@ -413,7 +410,6 @@ public class Client extends JFrame {
 
 	public void setAutoWireCapableBeanFactory(AutowireCapableBeanFactory aw) {
 		this.aw = aw;
-		yuploaderTableModel.setAutoWireBeanCapableFactory(aw);
 	}
 
 	public boolean isConnected() {
@@ -427,20 +423,17 @@ public class Client extends JFrame {
 
 	public boolean checkTimeoutAndConnect() {
 		if (!connected || (System.currentTimeMillis() - lastAccess > ftpTimeout)) {
-			System.out.println("Connected: " + isConnected());
-			System.out.println("Timeout ?: " + (System.currentTimeMillis() - lastAccess > ftpTimeout));
+			connected = false;
 			try {
 				ftpClient.connect(ftpHost);
 				int reply = ftpClient.getReplyCode();
 				if (!FTPReply.isPositiveCompletion(reply)) {
 					ftpClient.disconnect();
-					System.err.println("FTP server refused connection.");
 					helper.alert(this, "FTP server refused connection.");
 				} else {
 					ftpClient.enterLocalPassiveMode();
 					if (!ftpClient.login(ftpUsername, ftpPassword)) {
 						ftpLogout();
-						System.out.println("Problem with FTP Server Credentials, Contact Admin.");
 						helper.alert(this, "Problem with FTP Server Credentials, Contact Admin.");
 					} else {
 						try {
@@ -450,7 +443,7 @@ public class Client extends JFrame {
 							ftpClient.setBufferSize(-1);
 							ftpClient.setFileTransferMode(2);
 							ftpClient.configure(new FTPClientConfig(FTPClientConfig.SYST_L8));
-							setConnected(true);
+							connected = true;
 							lastAccess = System.currentTimeMillis();
 						} catch (Exception e1) {
 							e1.printStackTrace();
@@ -460,9 +453,7 @@ public class Client extends JFrame {
 				createMissingDirectories();
 			} catch (Exception e) {
 				connected = false;
-				System.out.println("Check your Network connectivity, looks like you are not connected to Internet!");
 				helper.alert(this, "Check your Network connectivity, looks like you are not connected to Internet!");
-				hidePause(true);
 				e.printStackTrace();
 			}
 		}

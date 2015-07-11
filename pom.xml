@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>yuown</groupId>
 	<artifactId>yuploader</artifactId>
-	<version>4.0</version>
+	<version>0.0.1</version>
 	<name>yuploader</name>
 	<description>Upload Files to a Dedicated Server through FTP</description>
 
@@ -33,12 +33,6 @@
 			<artifactId>spring-jdbc</artifactId>
 			<version>${jdbc.version}</version>
 		</dependency>
-		<!-- <dependency> -->
-		<!-- <groupId>org.springframework.integration</groupId> -->
-		<!-- <artifactId>spring-integration-ftp</artifactId> -->
-		<!-- <version>${ftp.version}</version> -->
-		<!-- </dependency> -->
-
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-dbcp2</artifactId>
@@ -60,13 +54,6 @@
 			<artifactId>mysql-connector-java</artifactId>
 			<version>${mysql.version}</version>
 		</dependency>
-
-		<dependency>
-			<groupId>com.jcraft</groupId>
-			<artifactId>jsch</artifactId>
-			<version>0.1.53</version>
-		</dependency>
-
 	</dependencies>
 	<build>
 		<plugins>

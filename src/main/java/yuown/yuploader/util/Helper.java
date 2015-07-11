@@ -14,7 +14,7 @@ public class Helper {
 	public void alert(java.awt.Component frame, String message) {
 		JOptionPane.showMessageDialog(frame, message, appTitle, JOptionPane.WARNING_MESSAGE);
 	}
-	
+
 	public int confirm(java.awt.Component frame, String message) {
 		return JOptionPane.showConfirmDialog(frame, message, appTitle, JOptionPane.YES_NO_OPTION);
 	}

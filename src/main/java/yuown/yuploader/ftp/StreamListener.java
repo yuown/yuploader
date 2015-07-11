@@ -4,6 +4,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 
+import javax.swing.JOptionPane;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.io.CopyStreamEvent;
@@ -17,6 +19,7 @@ import yuown.yuploader.model.FileObject;
 import yuown.yuploader.model.Status;
 import yuown.yuploader.model.YuploaderTableModel;
 import yuown.yuploader.ui.Client;
+import yuown.yuploader.util.Helper;
 import yuown.yuploader.util.YuownUtils;
 
 @Component
@@ -32,8 +35,6 @@ public class StreamListener implements CopyStreamListener, ActionListener {
 	@Autowired
 	private FTPClient ftpClient;
 
-	private boolean paused = false;
-
 	private long bytes = 0;
 	private double percentCompleted;
 	private long time = System.currentTimeMillis();
@@ -43,9 +44,10 @@ public class StreamListener implements CopyStreamListener, ActionListener {
 
 	private FileObject fileObject;
 
-	private QueueUpload worker;
-
 	private long totalBytesTransferred;
+
+	@Autowired
+	private Helper helper;
 
 	public StreamListener() {
 	}
@@ -67,30 +69,30 @@ public class StreamListener implements CopyStreamListener, ActionListener {
 		this.row = row2;
 		fileObject = (FileObject) yuploaderTableModel.getValueAt(row, 0);
 		this.startTime = System.currentTimeMillis();
-		paused = false;
+		totalBytesTransferred = fileObject.getOffset();
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		paused = true;
-		client.hidePause(paused);
-		if (StringUtils.equals("Cancel Upload", e.getActionCommand())) {
-			System.out.println("Cancelled Upload");
-			fileObject.setOffset(0);
-			yuploaderTableModel.setValueAt(Status.ADDED, row, 3);
-			yuploaderTableModel.setValueAt("0 %", row, 2);
-		}
 		try {
 			if (client.getInProgress()) {
-				int r = ftpClient.abor();
+				client.toggleLoginCtrls(false);
+				client.hidePause(true);
+				ftpClient.abort();
+				ftpClient.completePendingCommand();
 			}
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		}
-	}
-
-	public void setPaused(boolean b) {
-		this.paused = b;
+		if (StringUtils.equals("Cancel Upload", e.getActionCommand())) {
+			int choice = helper.confirm(client, "Are you sure cancel Current Upload ?");
+			if (choice == JOptionPane.YES_OPTION) {
+				fileObject.setOffset(0);
+				yuploaderTableModel.setValueAt(Status.ADDED, row, 3);
+				yuploaderTableModel.setValueAt("0 %", row, 2);
+				totalBytesTransferred = 0;
+			}
+		}
 	}
 
 	@Override
@@ -100,11 +102,6 @@ public class StreamListener implements CopyStreamListener, ActionListener {
 
 	@Override
 	public void bytesTransferred(long totalBytesTransferred, int bytesTransferred, long streamSize) {
-		worker.setPaused(paused);
-		client.hidePause(paused);
-		if (paused) {
-			return;
-		}
 		long s = fileObject.getSize();
 		totalBytesTransferred += this.totalBytesTransferred;
 		this.percentCompleted = YuownUtils.longTo2Decimals(totalBytesTransferred * 100, s);
@@ -123,10 +120,6 @@ public class StreamListener implements CopyStreamListener, ActionListener {
 			yuploaderTableModel.setValueAt(Status.COMPLETED, row, 3);
 		}
 		fileObject.setOffset(totalBytesTransferred);
-	}
-
-	public void setWorker(QueueUpload queueUpload) {
-		this.worker = queueUpload;
 	}
 
 	public void setTotalBytesTransferred(long totalBytesTransferred) {

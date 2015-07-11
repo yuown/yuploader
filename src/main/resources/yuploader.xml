@@ -7,7 +7,7 @@
                 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
                 http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
-	<context:property-placeholder location="yuploader-internet.properties" />
+	<context:property-placeholder location="yuploader.properties" />
 	<context:component-scan base-package="yuown.yuploader" use-default-filters="true" />
 
 	<bean id="userObject" class="yuown.yuploader.model.User" scope="singleton" />

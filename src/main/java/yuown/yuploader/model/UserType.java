@@ -8,9 +8,9 @@ public enum UserType {
 	USER("user"), ADMIN("admin");
 
 	private String type;
-	
+
 	private static Map<String, UserType> map = new HashMap<String, UserType>();
-	
+
 	static {
 		for (UserType type : UserType.values()) {
 			map.put(type.toString(), type);
@@ -29,5 +29,5 @@ public enum UserType {
 	public String toString() {
 		return type;
 	}
-	
+
 }
