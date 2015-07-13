@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>yuown</groupId>
 	<artifactId>yuploader</artifactId>
-	<version>0.0.1</version>
+	<version>0.0.2</version>
 	<name>yuploader</name>
 	<description>Upload Files to a Dedicated Server through FTP</description>
 
