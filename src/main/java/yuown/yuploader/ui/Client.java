@@ -421,7 +421,7 @@ public class Client extends JFrame {
 			btnRemoveSelectedFiles.setEnabled(true);
 			connected = false;
 			try {
-				ftpClient.connect(ftpHost);
+				ftpClient.connect(ftpHost, ftpPort);
 				int reply = ftpClient.getReplyCode();
 				if (!FTPReply.isPositiveCompletion(reply)) {
 					ftpClient.disconnect();
