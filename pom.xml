@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>yuown</groupId>
 	<artifactId>yuploader</artifactId>
-	<version>0.5</version>
+	<version>0.6</version>
 	<name>yuploader</name>
 	<description>Upload Files to a Dedicated Server through FTP</description>
 
@@ -16,6 +16,7 @@
 		<commons.lang3.version>3.4</commons.lang3.version>
 		<mysql.version>5.1.35</mysql.version>
 		<juneloop.version>1.0</juneloop.version>
+		<commons.codec.version>1.10</commons.codec.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -43,6 +44,12 @@
 			<artifactId>commons-lang3</artifactId>
 			<version>${commons.lang3.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+			<version>${commons.codec.version}</version>
+		</dependency>
+
 		<dependency>
 			<groupId>commons-net</groupId>
 			<artifactId>commons-net</artifactId>
@@ -149,8 +156,9 @@
 						</keystoreConfig>
 					</sign>
 					<!-- BUILDING PROCESS -->
-<!-- 					<pack200>true</pack200> -->
-<!-- 					<gzip>true</gzip> default force when pack200 false, true when pack200 selected ?? -->
+					<!-- <pack200>true</pack200> -->
+					<!-- <gzip>true</gzip> default force when pack200 false, true when pack200 
+						selected ?? -->
 					<!-- causes a version attribute to be output in each jar resource element, 
 						optional, default is false -->
 					<outputJarVersions>true</outputJarVersions>

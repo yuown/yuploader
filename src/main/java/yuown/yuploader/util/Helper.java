@@ -18,7 +18,7 @@ public class Helper {
 	public int confirm(java.awt.Component frame, String message) {
 		return JOptionPane.showConfirmDialog(frame, message, appTitle, JOptionPane.YES_NO_OPTION);
 	}
-
+	
 	public String getDateDDMMYYYY() {
 		Date d = new Date();
 		return (d.getDate() < 10 ? "0" + d.getDate() : new StringBuilder(String.valueOf(d.getDate())).toString())

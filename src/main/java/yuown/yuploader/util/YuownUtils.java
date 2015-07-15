@@ -3,12 +3,13 @@ package yuown.yuploader.util;
 import java.io.File;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.Base64Utils;
 
 public class YuownUtils {
 
 	public static final String SELECT_USER_QUERY = "SELECT * FROM users WHERE uname = ?";
 
-	public static final String SELECT_FTP_DETAILS_QUERY = "SELECT * FROM settings WHERE name in (?, ?, ?, ?, ?, ?)";
+	public static final String SELECT_FTP_DETAILS_QUERY = "SELECT * FROM settings WHERE name in (?, ?, ?, ?, ?, ?, ?)";
 
 	public static final String FTP_USER = "ftp_user";
 
@@ -28,6 +29,8 @@ public class YuownUtils {
 
 	public static final String EMPTY_STRING = "";
 
+	public static final String UPDATE_URL = "update_url";
+
 	private static String ftpUserName;
 
 	private static String ftpPassword;
@@ -39,6 +42,8 @@ public class YuownUtils {
 	private static String ftpHost;
 
 	private static double appVersion;
+
+	private static String updateUrl;
 
 	public static double longTo2Decimals(long input, long divide) {
 		return (double) ((long) ((double) ((input * 100.0) / (divide * 100.0)) * 100)) / 100;
@@ -78,11 +83,11 @@ public class YuownUtils {
 	}
 
 	public static void setFtpUserName(String ftpUserName) {
-		YuownUtils.ftpUserName = ftpUserName;
+		YuownUtils.ftpUserName = new String(Base64Utils.decodeFromString(ftpUserName));
 	}
 
 	public static void setFtpPassword(String ftpPassword) {
-		YuownUtils.ftpPassword = ftpPassword;
+		YuownUtils.ftpPassword = new String(Base64Utils.decodeFromString(ftpPassword));
 	}
 
 	public static void setFtpPort(int ftpPort) {
@@ -94,7 +99,7 @@ public class YuownUtils {
 	}
 
 	public static void setFtpHost(String ftpHost) {
-		YuownUtils.ftpHost = ftpHost;
+		YuownUtils.ftpHost = new String(Base64Utils.decodeFromString(ftpHost));
 	}
 
 	public static void setAppVersion(double appVersion) {
@@ -103,5 +108,13 @@ public class YuownUtils {
 
 	public static double getAppVersion() {
 		return appVersion;
+	}
+
+	public static String getUpdateUrl() {
+		return updateUrl;
+	}
+
+	public static void setUpdateUrl(String updateUrl) {
+		YuownUtils.updateUrl = updateUrl;
 	}
 }

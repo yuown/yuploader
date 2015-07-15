@@ -1,22 +1,23 @@
 package yuown.yuploader.ui;
 
+import java.awt.Desktop;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Properties;
 
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
@@ -24,7 +25,6 @@ import javax.swing.SpringLayout;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.UIManager;
-import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
 
@@ -39,7 +39,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import yuown.yuploader.extract.ConfigMapper;
 import yuown.yuploader.extract.UserMapper;
 import yuown.yuploader.model.Config;
-import yuown.yuploader.model.Theme;
 import yuown.yuploader.model.User;
 import yuown.yuploader.util.Helper;
 import yuown.yuploader.util.YuownUtils;
@@ -54,7 +53,6 @@ public class YuploaderApp extends JDialog {
 	private ApplicationContext context;
 
 	private final JPanel loginPanel = new JPanel();
-	private JComboBox themeList;
 	private JTextField txtUserName;
 	private JPasswordField txtPassword;
 	private JButton btnLogin;
@@ -74,6 +72,8 @@ public class YuploaderApp extends JDialog {
 	private boolean exceptionWhileTheme;
 
 	double currentVersion = 0.0;
+
+	private String themeClass;
 
 	/**
 	 * Launch the application.
@@ -106,6 +106,7 @@ public class YuploaderApp extends JDialog {
 		loginPanel.setLayout(sl_loginPanel);
 
 		JLabel lblUserName = new JLabel("User Name: ");
+		sl_loginPanel.putConstraint(SpringLayout.NORTH, lblUserName, 10, SpringLayout.NORTH, loginPanel);
 		sl_loginPanel.putConstraint(SpringLayout.WEST, lblUserName, 10, SpringLayout.WEST, loginPanel);
 		loginPanel.add(lblUserName);
 
@@ -129,7 +130,7 @@ public class YuploaderApp extends JDialog {
 		loginPanel.add(txtPassword);
 
 		JPanel headerPanel = new JPanel();
-		springLayout.putConstraint(SpringLayout.SOUTH, loginPanel, 150, SpringLayout.SOUTH, headerPanel);
+		springLayout.putConstraint(SpringLayout.SOUTH, loginPanel, 130, SpringLayout.SOUTH, headerPanel);
 		springLayout.putConstraint(SpringLayout.EAST, headerPanel, -10, SpringLayout.EAST, getContentPane());
 		springLayout.putConstraint(SpringLayout.NORTH, loginPanel, 10, SpringLayout.SOUTH, headerPanel);
 		springLayout.putConstraint(SpringLayout.WEST, headerPanel, 10, SpringLayout.WEST, getContentPane());
@@ -144,28 +145,6 @@ public class YuploaderApp extends JDialog {
 		});
 		loginPanel.add(btnLogin);
 		getRootPane().setDefaultButton(btnLogin);
-
-		JLabel lblTheme = new JLabel("Theme: ");
-		sl_loginPanel.putConstraint(SpringLayout.NORTH, lblUserName, 15, SpringLayout.SOUTH, lblTheme);
-		sl_loginPanel.putConstraint(SpringLayout.NORTH, lblTheme, 10, SpringLayout.NORTH, loginPanel);
-		sl_loginPanel.putConstraint(SpringLayout.WEST, lblTheme, 10, SpringLayout.WEST, loginPanel);
-		loginPanel.add(lblTheme);
-
-		themeList = new JComboBox();
-		themeList.addItemListener(new ItemListener() {
-
-			@Override
-			public void itemStateChanged(ItemEvent event) {
-				if (event.getStateChange() == ItemEvent.SELECTED) {
-					Theme item = (Theme) event.getItem();
-					setTheme(YuploaderApp.this, item.getClassName());
-				}
-			}
-		});
-		sl_loginPanel.putConstraint(SpringLayout.NORTH, themeList, -5, SpringLayout.NORTH, lblTheme);
-		sl_loginPanel.putConstraint(SpringLayout.WEST, themeList, 0, SpringLayout.WEST, txtUserName);
-		sl_loginPanel.putConstraint(SpringLayout.EAST, themeList, 0, SpringLayout.EAST, txtUserName);
-		loginPanel.add(themeList);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		getContentPane().add(headerPanel);
 		SpringLayout sl_headerPanel = new SpringLayout();
@@ -245,14 +224,13 @@ public class YuploaderApp extends JDialog {
 		springLayout.putConstraint(SpringLayout.NORTH, headerPanel, 10, SpringLayout.SOUTH, forIcon);
 		getContentPane().add(forIcon);
 
+		themeClass = "com.sun.java.swing.plaf.gtk.GTKLookAndFeel";
 		try {
-			for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-				themeList.addItem(new Theme(info.getName(), info.getClassName()));
-			}
-			setTheme(this, ((Theme) themeList.getItemAt(0)).getClassName());
+			setTheme(this, themeClass);
 		} catch (Exception e) {
 			exceptionWhileTheme = true;
-			setTheme(this, UIManager.getSystemLookAndFeelClassName());
+			themeClass = UIManager.getSystemLookAndFeelClassName();
+			setTheme(this, themeClass);
 		}
 
 		alertNewVersion();
@@ -276,9 +254,9 @@ public class YuploaderApp extends JDialog {
 
 	private boolean getFTPConfiguration() {
 		List<Config> config = jdbcTemplate.query(YuownUtils.SELECT_FTP_DETAILS_QUERY, new String[] { YuownUtils.FTP_USER, YuownUtils.FTP_PASSWORD, YuownUtils.FTP_PORT, YuownUtils.FTP_PATH,
-				YuownUtils.FTP_HOST, YuownUtils.APP_VERSION }, new ConfigMapper());
+				YuownUtils.FTP_HOST, YuownUtils.APP_VERSION, YuownUtils.UPDATE_URL }, new ConfigMapper());
 		boolean retrievedConfig = false;
-		if (config.size() == 6) {
+		if (config.size() == 7) {
 			retrievedConfig = true;
 			for (Config eachConfig : config) {
 				String configName = eachConfig.getName();
@@ -304,6 +282,8 @@ public class YuploaderApp extends JDialog {
 					} catch (Exception e) {
 					}
 					YuownUtils.setAppVersion(aVer);
+				} else if (StringUtils.equalsIgnoreCase(YuownUtils.UPDATE_URL, configName)) {
+					YuownUtils.setUpdateUrl(eachConfig.getValue());
 				}
 			}
 		}
@@ -322,7 +302,6 @@ public class YuploaderApp extends JDialog {
 						txtUserName.setEnabled(false);
 						txtPassword.setEnabled(false);
 						btnLogin.setEnabled(false);
-						themeList.setEnabled(false);
 						List<User> users = jdbcTemplate.query(YuownUtils.SELECT_USER_QUERY, new String[] { user }, new UserMapper());
 						if (!users.isEmpty()) {
 							User userEntity = users.get(0);
@@ -351,16 +330,13 @@ public class YuploaderApp extends JDialog {
 				txtUserName.setEnabled(true);
 				txtPassword.setEnabled(true);
 				btnLogin.setEnabled(true);
-				themeList.setEnabled(true);
 				return 0;
 			}
 		}.execute();
 	}
 
 	private void launchApp() {
-		if (!exceptionWhileTheme) {
-			setTheme(client, ((Theme) themeList.getSelectedItem()).getClassName());
-		}
+		setTheme(client, themeClass);
 		client.setVisible(true);
 		client.setUser();
 		client.connectInBackgroundAndStartUpload(false);
@@ -392,7 +368,20 @@ public class YuploaderApp extends JDialog {
 
 	private void alertNewVersion() {
 		if (YuownUtils.getAppVersion() > currentVersion) {
-			helper.alert(this, "A New Version of the Application is available! (Version: " + YuownUtils.getAppVersion() + ")");
+			int choice = helper.confirm(this, "A New Version of the Application is available! (Version: " + YuownUtils.getAppVersion() + "). Do you want to Download Now ?");
+			if (choice == JOptionPane.YES_OPTION) {
+				if (Desktop.isDesktopSupported()) {
+					try {
+						Desktop.getDesktop().browse(new URI(YuownUtils.getUpdateUrl()));
+					} catch (IOException e) {
+						helper.alert(this, "Unable to Launch Update URL!");
+						e.printStackTrace();
+					} catch (URISyntaxException e) {
+						helper.alert(this, "Some Problem with Update URL, Please Contact Admin!");
+						e.printStackTrace();
+					}
+				}
+			}
 		}
 	}
 }
