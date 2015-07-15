@@ -14,7 +14,6 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.io.CopyStreamEvent;
 import org.apache.commons.net.io.CopyStreamListener;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -38,14 +37,6 @@ public class StreamListener implements CopyStreamListener, ActionListener {
 
 	@Autowired
 	private FTPClient ftpClient;
-
-	@Value("${ftp.conn.host}")
-	private String ftpHost;
-
-	@Value("${ftp.conn.port}")
-	private int ftpPort;
-
-	public static final int TIMEOUT = 2000;
 
 	private long bytes = 0;
 	private double percentCompleted;
@@ -153,7 +144,7 @@ public class StreamListener implements CopyStreamListener, ActionListener {
 		Socket socket = null;
 		boolean reachable = false;
 		try {
-			socket = new Socket(ftpHost, ftpPort);
+			socket = new Socket(YuownUtils.getFtpHost(), YuownUtils.getFtpPort());
 			reachable = true;
 		} catch (UnknownHostException e) {
 			e.printStackTrace();

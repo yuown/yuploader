@@ -13,7 +13,6 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.io.Util;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -23,6 +22,7 @@ import yuown.yuploader.model.User;
 import yuown.yuploader.model.YuploaderTableModel;
 import yuown.yuploader.ui.Client;
 import yuown.yuploader.util.Helper;
+import yuown.yuploader.util.YuownUtils;
 
 @Component
 @Scope("prototype")
@@ -38,31 +38,12 @@ public class QueueUpload extends SwingWorker<Integer, Integer> {
 	@Autowired
 	private Helper helper;
 
-	@Value("${ftp.conn.host}")
-	private String ftpHost;
-
-	@Value("${ftp.conn.user}")
-	private String ftpUsername;
-
-	@Value("${ftp.conn.pass}")
-	private String ftpPassword;
-
-	@Value("${ftp.conn.port}")
-	private int ftpPort;
-
-	@Value("${ftp.bufferSize}")
-	private int ftpBufferSize;
-
-	@Value("${ftp.conn.basepath}")
-	private String ftpBasePath;
-
 	@Autowired
 	private User userObject;
 
 	public void submitToQueue() {
 		client.toggleLogin(false);
 		System.out.println("Uploader Worker Started: " + System.currentTimeMillis());
-
 		int rowCount = this.yuploaderTableModel.getRowCount();
 		for (int row = 0; (row < rowCount); row++) {
 			FileObject file = (FileObject) this.yuploaderTableModel.getValueAt(row, 0);
@@ -73,6 +54,7 @@ public class QueueUpload extends SwingWorker<Integer, Integer> {
 					markUploadInProgress(file, row);
 					client.togglePause(true);
 					streamListener.setReader(reader);
+					client.changeToBaseDirectory(YuownUtils.getParentDirectoryName(file.getFullPath()));
 					if (file.getOffset() > 0) {
 						ftpClient.appendFile(file.getFileName(), reader);
 					} else {
@@ -126,24 +108,24 @@ public class QueueUpload extends SwingWorker<Integer, Integer> {
 		ftpClient.setCopyStreamListener(streamListener);
 		streamListener.setRow(row);
 
-//		new SwingWorker<Integer, Integer>() {
-//			@Override
-//			protected Integer doInBackground() throws Exception {
-//				long t = System.currentTimeMillis();
-//				while (streamListener.isStarted()) {
-//					long d = System.currentTimeMillis() - t;
-//					if (d > 10000L) {
-//						t = System.currentTimeMillis();
-//						boolean reachable = streamListener.isNetworkConnected();
-//						if (!reachable) {
-//							streamListener.actionPerformed(null);
-//							streamListener.setStarted(false);
-//						}
-//					}
-//				}
-//				return 0;
-//			}
-//		}.execute();
+		// new SwingWorker<Integer, Integer>() {
+		// @Override
+		// protected Integer doInBackground() throws Exception {
+		// long t = System.currentTimeMillis();
+		// while (streamListener.isStarted()) {
+		// long d = System.currentTimeMillis() - t;
+		// if (d > 10000L) {
+		// t = System.currentTimeMillis();
+		// boolean reachable = streamListener.isNetworkConnected();
+		// if (!reachable) {
+		// streamListener.actionPerformed(null);
+		// streamListener.setStarted(false);
+		// }
+		// }
+		// }
+		// return 0;
+		// }
+		// }.execute();
 
 	}
 

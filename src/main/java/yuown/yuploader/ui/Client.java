@@ -23,6 +23,7 @@ import javax.swing.SwingWorker;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.PrintCommandListener;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
@@ -40,6 +41,7 @@ import yuown.yuploader.model.Status;
 import yuown.yuploader.model.User;
 import yuown.yuploader.model.YuploaderTableModel;
 import yuown.yuploader.util.Helper;
+import yuown.yuploader.util.YuownUtils;
 
 @Component
 public class Client extends JFrame {
@@ -65,8 +67,11 @@ public class Client extends JFrame {
 	@Value("${help.mobile}")
 	private String helpMobile;
 
+	@Value("${app.versionTag}")
+	private String appVersionTag;
+	
 	@Value("${app.version}")
-	private String appVersion;
+	private double appVersion;
 
 	@Value("${yuploader.app.title}")
 	private String appTitle;
@@ -106,28 +111,12 @@ public class Client extends JFrame {
 	@Autowired
 	private FTPClient ftpClient;
 
-	@Value("${ftp.conn.host}")
-	private String ftpHost;
-
-	@Value("${ftp.conn.user}")
-	private String ftpUsername;
-
-	@Value("${ftp.conn.pass}")
-	private String ftpPassword;
-
-	@Value("${ftp.conn.port}")
-	private int ftpPort;
-
-	@Value("${ftp.bufferSize}")
-	private int ftpBufferSize;
-
-	@Value("${ftp.conn.basepath}")
-	private String ftpBasePath;
-
 	@Value("${ftp.conn.timeout}")
 	private long ftpTimeout;
 
 	private long lastAccess;
+
+	private String ftpBasePath;
 
 	public Client() {
 	}
@@ -246,7 +235,7 @@ public class Client extends JFrame {
 		sl_statusPanel.putConstraint(SpringLayout.WEST, lblDevsitecom, 5, SpringLayout.EAST, lblDeveloper);
 		statusPanel.add(lblDevsitecom);
 
-		JLabel lblAppVersion = new JLabel(appVersion);
+		JLabel lblAppVersion = new JLabel(appVersionTag + appVersion);
 		sl_statusPanel.putConstraint(SpringLayout.NORTH, lblAppVersion, 7, SpringLayout.NORTH, statusPanel);
 		sl_statusPanel.putConstraint(SpringLayout.EAST, lblAppVersion, -10, SpringLayout.EAST, statusPanel);
 		statusPanel.add(lblAppVersion);
@@ -312,11 +301,11 @@ public class Client extends JFrame {
 		togglePause(false);
 	}
 
-	public void connectInBackground() {
+	public void connectInBackgroundAndStartUpload(final boolean startUploadAsWell) {
 		new SwingWorker() {
 			protected Integer doInBackground() throws Exception {
 				System.out.println("Connect to FTP Server in Background");
-				Client.this.checkTimeoutAndConnect();
+				Client.this.checkTimeoutAndConnect(startUploadAsWell);
 				return Integer.valueOf(0);
 			}
 		}.execute();
@@ -326,9 +315,8 @@ public class Client extends JFrame {
 		yuploaderTableModel.removeSelectedRows();
 	}
 
-	public void submitToUpload() {
-		connectInBackground();
-		startOrPause();
+	private void submitToUpload() {
+		connectInBackgroundAndStartUpload(true);
 	}
 
 	public void startOrPause() {
@@ -414,21 +402,21 @@ public class Client extends JFrame {
 		this.connected = connected;
 	}
 
-	public boolean checkTimeoutAndConnect() {
+	public boolean checkTimeoutAndConnect(boolean startUploadAsWell) {
 		if (!connected || (System.currentTimeMillis() - lastAccess > ftpTimeout)) {
 			toggleLogin(false);
 			btnAddFiles.setEnabled(true);
 			btnRemoveSelectedFiles.setEnabled(true);
 			connected = false;
 			try {
-				ftpClient.connect(ftpHost, ftpPort);
+				ftpClient.connect(YuownUtils.getFtpHost(), YuownUtils.getFtpPort());
 				int reply = ftpClient.getReplyCode();
 				if (!FTPReply.isPositiveCompletion(reply)) {
 					ftpClient.disconnect();
 					helper.alert(this, "FTP server refused connection.");
 				} else {
 					ftpClient.enterLocalPassiveMode();
-					if (!ftpClient.login(ftpUsername, ftpPassword)) {
+					if (!ftpClient.login(YuownUtils.getFtpUserName(), YuownUtils.getFtpPassword())) {
 						ftpLogout();
 						helper.alert(this, "Problem with FTP Server Credentials, Contact Admin.");
 					} else {
@@ -441,7 +429,12 @@ public class Client extends JFrame {
 							ftpClient.configure(new FTPClientConfig(FTPClientConfig.SYST_L8));
 							connected = true;
 							lastAccess = System.currentTimeMillis();
-							createMissingDirectories();
+							ftpBasePath = YuownUtils.getFtpPath();
+							if (!startUploadAsWell) {
+								createMissingDirectories();
+							} else {
+								changeToBaseDirectory(YuownUtils.EMPTY_STRING);
+							}
 						} catch (Exception e1) {
 							e1.printStackTrace();
 						}
@@ -454,6 +447,9 @@ public class Client extends JFrame {
 			}
 		}
 		toggleLogin(true);
+		if (connected && startUploadAsWell) {
+			startOrPause();
+		}
 		return connected;
 	}
 
@@ -475,6 +471,23 @@ public class Client extends JFrame {
 			if (!exists) {
 				ftpClient.makeDirectory(DDMMYYYY);
 				ftpClient.changeWorkingDirectory(DDMMYYYY);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void changeToBaseDirectory(String NEW_DIR_NAME) {
+		String DDMMYYYY = helper.getDateDDMMYYYY();
+		boolean exists = false;
+		try {
+			ftpClient.changeWorkingDirectory(ftpBasePath + File.separatorChar + userObject.getUname() + File.separatorChar + DDMMYYYY);
+			if (StringUtils.isNotBlank(NEW_DIR_NAME)) {
+				exists = ftpClient.changeWorkingDirectory(NEW_DIR_NAME);
+				if (!exists) {
+					ftpClient.makeDirectory(NEW_DIR_NAME);
+					ftpClient.changeWorkingDirectory(NEW_DIR_NAME);
+				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

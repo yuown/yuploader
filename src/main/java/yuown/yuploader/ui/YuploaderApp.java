@@ -36,7 +36,9 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import yuown.yuploader.extract.ConfigMapper;
 import yuown.yuploader.extract.UserMapper;
+import yuown.yuploader.model.Config;
 import yuown.yuploader.model.Theme;
 import yuown.yuploader.model.User;
 import yuown.yuploader.util.Helper;
@@ -70,6 +72,8 @@ public class YuploaderApp extends JDialog {
 	private JLabel forIcon;
 
 	private boolean exceptionWhileTheme;
+
+	double currentVersion = 0.0;
 
 	/**
 	 * Launch the application.
@@ -224,7 +228,7 @@ public class YuploaderApp extends JDialog {
 		sl_statusPanel.putConstraint(SpringLayout.WEST, lblDevsitecom, 5, SpringLayout.EAST, lblDeveloper);
 		statusPanel.add(lblDevsitecom);
 
-		JLabel lblAppVersion = new JLabel(props.getProperty("app.version"));
+		JLabel lblAppVersion = new JLabel(props.getProperty("app.versionTag") + props.getProperty("app.version"));
 		sl_statusPanel.putConstraint(SpringLayout.NORTH, lblAppVersion, 7, SpringLayout.NORTH, statusPanel);
 		sl_statusPanel.putConstraint(SpringLayout.EAST, lblAppVersion, -10, SpringLayout.EAST, statusPanel);
 		statusPanel.add(lblAppVersion);
@@ -250,6 +254,8 @@ public class YuploaderApp extends JDialog {
 			exceptionWhileTheme = true;
 			setTheme(this, UIManager.getSystemLookAndFeelClassName());
 		}
+
+		alertNewVersion();
 	}
 
 	protected void setTheme(JDialog frame, String className) {
@@ -268,38 +274,41 @@ public class YuploaderApp extends JDialog {
 		}
 	}
 
-	// private boolean getFTPConfiguration() {
-	// List<Config> config =
-	// jdbcTemplate.query(YuownUtils.SELECT_FTP_DETAILS_QUERY, new String[] {
-	// YuownUtils.FTP_USER, YuownUtils.FTP_PASSWORD, YuownUtils.FTP_PORT,
-	// YuownUtils.FTP_PATH, YuownUtils.FTP_HOST }, new ConfigMapper());
-	// boolean retrievedConfig = false;
-	// if(config.size() == 5) {
-	// for (Config eachConfig : config) {
-	// String configName = eachConfig.getName();
-	// if(StringUtils.equalsIgnoreCase(YuownUtils.FTP_USER, configName)) {
-	// ftpHelperBean.setFtpUsername(eachConfig.getValue());
-	// } else if(StringUtils.equalsIgnoreCase(YuownUtils.FTP_PASSWORD,
-	// configName)) {
-	// ftpHelperBean.setFtpPassword(eachConfig.getValue());
-	// } else if(StringUtils.equalsIgnoreCase(YuownUtils.FTP_PORT, configName))
-	// {
-	// int port = 21;
-	// try {
-	// port = Integer.parseInt(eachConfig.getValue());
-	// } catch(Exception e) {}
-	// ftpHelperBean.setFtpPort(port);
-	// } else if(StringUtils.equalsIgnoreCase(YuownUtils.FTP_PATH, configName))
-	// {
-	// ftpHelperBean.setFtpPath(eachConfig.getValue());
-	// } else if(StringUtils.equalsIgnoreCase(YuownUtils.FTP_HOST, configName))
-	// {
-	// ftpHelperBean.setFtpHost(eachConfig.getValue());
-	// }
-	// }
-	// }
-	// return retrievedConfig;
-	// }
+	private boolean getFTPConfiguration() {
+		List<Config> config = jdbcTemplate.query(YuownUtils.SELECT_FTP_DETAILS_QUERY, new String[] { YuownUtils.FTP_USER, YuownUtils.FTP_PASSWORD, YuownUtils.FTP_PORT, YuownUtils.FTP_PATH,
+				YuownUtils.FTP_HOST, YuownUtils.APP_VERSION }, new ConfigMapper());
+		boolean retrievedConfig = false;
+		if (config.size() == 6) {
+			retrievedConfig = true;
+			for (Config eachConfig : config) {
+				String configName = eachConfig.getName();
+				if (StringUtils.equalsIgnoreCase(YuownUtils.FTP_USER, configName)) {
+					YuownUtils.setFtpUserName(eachConfig.getValue());
+				} else if (StringUtils.equalsIgnoreCase(YuownUtils.FTP_PASSWORD, configName)) {
+					YuownUtils.setFtpPassword(eachConfig.getValue());
+				} else if (StringUtils.equalsIgnoreCase(YuownUtils.FTP_PORT, configName)) {
+					int port = 21;
+					try {
+						port = Integer.parseInt(eachConfig.getValue());
+					} catch (Exception e) {
+					}
+					YuownUtils.setFtpPort(port);
+				} else if (StringUtils.equalsIgnoreCase(YuownUtils.FTP_PATH, configName)) {
+					YuownUtils.setFtpPath(eachConfig.getValue());
+				} else if (StringUtils.equalsIgnoreCase(YuownUtils.FTP_HOST, configName)) {
+					YuownUtils.setFtpHost(eachConfig.getValue());
+				} else if (StringUtils.equalsIgnoreCase(YuownUtils.APP_VERSION, configName)) {
+					double aVer = 0.0;
+					try {
+						aVer = Double.parseDouble(eachConfig.getValue());
+					} catch (Exception e) {
+					}
+					YuownUtils.setAppVersion(aVer);
+				}
+			}
+		}
+		return retrievedConfig;
+	}
 
 	protected void login(ActionEvent e) {
 		final String user = txtUserName.getText();
@@ -322,6 +331,7 @@ public class YuploaderApp extends JDialog {
 									helper.alert(me, "Your User is Disabled, Please Contact Administrator");
 								} else {
 									me.userObject.setUname(userEntity.getUname());
+									me.userObject.setFullName(userEntity.getFullName());
 									launchApp();
 									me.setVisible(false);
 								}
@@ -353,7 +363,7 @@ public class YuploaderApp extends JDialog {
 		}
 		client.setVisible(true);
 		client.setUser();
-		client.connectInBackground();
+		client.connectInBackgroundAndStartUpload(false);
 		setVisible(false);
 		dispose();
 	}
@@ -372,9 +382,17 @@ public class YuploaderApp extends JDialog {
 		if (inputStream != null) {
 			try {
 				props.load(inputStream);
+				currentVersion = Double.parseDouble(props.getProperty("app.version"));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+		}
+		getFTPConfiguration();
+	}
+
+	private void alertNewVersion() {
+		if (YuownUtils.getAppVersion() > currentVersion) {
+			helper.alert(this, "A New Version of the Application is available! (Version: " + YuownUtils.getAppVersion() + ")");
 		}
 	}
 }
