@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch4jConfig>
   <dontWrapJar>false</dontWrapJar>
-  <headerType>console</headerType>
-  <jar>C:\Users\kiran.nk\Desktop\yexe\lib\yuploader-0.6.jar</jar>
-  <outfile>C:\Users\kiran.nk\Desktop\yexe\yuploader.exe</outfile>
+  <headerType>gui</headerType>
+  <jar>C:\Users\kiran.nk\Desktop\yuploader\lib\yuploader-1.0.jar</jar>
+  <outfile>C:\Users\kiran.nk\Desktop\yuploader\yuploader.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
   <chdir>.</chdir>
@@ -46,4 +46,10 @@
     <jdkPreference>preferJre</jdkPreference>
     <runtimeBits>64/32</runtimeBits>
   </jre>
+  <splash>
+    <file>C:\Users\kiran.nk\Desktop\y\vvv.bmp</file>
+    <waitForWindow>true</waitForWindow>
+    <timeout>60</timeout>
+    <timeoutErr>true</timeoutErr>
+  </splash>
 </launch4jConfig>
