@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch4jConfig>
+  <dontWrapJar>false</dontWrapJar>
+  <headerType>console</headerType>
+  <jar>C:\Users\kiran.nk\Desktop\yexe\lib\yuploader-0.6.jar</jar>
+  <outfile>C:\Users\kiran.nk\Desktop\yexe\yuploader.exe</outfile>
+  <errTitle></errTitle>
+  <cmdLine></cmdLine>
+  <chdir>.</chdir>
+  <priority>normal</priority>
+  <downloadUrl>http://java.com/download</downloadUrl>
+  <supportUrl></supportUrl>
+  <stayAlive>false</stayAlive>
+  <restartOnCrash>false</restartOnCrash>
+  <manifest></manifest>
+  <icon>C:\Users\kiran.nk\Desktop\y\yuploader-icon.ico</icon>
+  <singleInstance>
+    <mutexName>yuploader</mutexName>
+    <windowTitle>yuploader for Vasanth Video Vision</windowTitle>
+  </singleInstance>
+  <classPath>
+    <mainClass>yuown.yuploader.ui.YuploaderApp</mainClass>
+    <cp>lib\spring-core-4.1.6.RELEASE.jar</cp>
+    <cp>lib\commons-logging-1.2.jar</cp>
+    <cp>lib\spring-context-support-4.1.6.RELEASE.jar</cp>
+    <cp>lib\spring-beans-4.1.6.RELEASE.jar</cp>
+    <cp>lib\spring-context-4.1.6.RELEASE.jar</cp>
+    <cp>lib\spring-aop-4.1.6.RELEASE.jar</cp>
+    <cp>lib\aopalliance-1.0.jar</cp>
+    <cp>lib\spring-expression-4.1.6.RELEASE.jar</cp>
+    <cp>lib\spring-jdbc-4.1.6.RELEASE.jar</cp>
+    <cp>lib\spring-tx-4.1.6.RELEASE.jar</cp>
+    <cp>lib\commons-dbcp2-2.1.jar</cp>
+    <cp>lib\commons-pool2-2.3.jar</cp>
+    <cp>lib\commons-lang3-3.4.jar</cp>
+    <cp>lib\commons-codec-1.10.jar</cp>
+    <cp>lib\commons-net-3.3.jar</cp>
+    <cp>lib\mysql-connector-java-5.1.35.jar</cp>
+  </classPath>
+  <jre>
+    <path>../jre</path>
+    <bundledJre64Bit>false</bundledJre64Bit>
+    <bundledJreAsFallback>false</bundledJreAsFallback>
+    <minVersion>1.8.0</minVersion>
+    <maxVersion></maxVersion>
+    <jdkPreference>preferJre</jdkPreference>
+    <runtimeBits>64/32</runtimeBits>
+  </jre>
+</launch4jConfig>

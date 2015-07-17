@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>yuown</groupId>
 	<artifactId>yuploader</artifactId>
-	<version>0.6</version>
+	<version>1.0</version>
 	<name>yuploader</name>
 	<description>Upload Files to a Dedicated Server through FTP</description>
 
@@ -75,14 +75,14 @@
 							<addClasspath>true</addClasspath>
 						</manifest>
 						<manifestEntries>
-							<Permissions>all-permissions</Permissions>
-							<Codebase>https://ovh.optumconnect.com/yuploader/</Codebase>
+<!-- 							<Permissions>all-permissions</Permissions> -->
+<!-- 							<Codebase>https://ovh.optumconnect.com/yuploader/</Codebase> -->
 							<Application-Name>yuploader</Application-Name>
-							<Trusted-Only>false</Trusted-Only>
-							<Trusted-Library>true</Trusted-Library>
-							<Application-Library-Allowable-Codebase>https://ovh.optumconnect.com/yuploader/</Application-Library-Allowable-Codebase>
-							<Caller-Allowable-Codebase>https://ovh.optumconnect.com/yuploader/</Caller-Allowable-Codebase>
-							<Class-Path>lib/</Class-Path>
+<!-- 							<Trusted-Only>false</Trusted-Only> -->
+<!-- 							<Trusted-Library>true</Trusted-Library> -->
+<!-- 							<Application-Library-Allowable-Codebase>https://ovh.optumconnect.com/yuploader/</Application-Library-Allowable-Codebase> -->
+<!-- 							<Caller-Allowable-Codebase>https://ovh.optumconnect.com/yuploader/</Caller-Allowable-Codebase> -->
+<!-- 							<Class-Path>lib/</Class-Path> -->
 						</manifestEntries>
 						<addMavenDescriptor>false</addMavenDescriptor>
 					</archive>
@@ -108,7 +108,7 @@
 					<excludeTransitive>false</excludeTransitive>
 					<!-- The path where the libraries are stored within the jnlp structure. 
 						not required. by default the libraries are within the working directory -->
-					<libPath>lib</libPath>
+<!-- 					<libPath>lib</libPath> -->
 					<outputJarVersions>true</outputJarVersions>
 					<!-- [optional] transitive dependencies filter - if omitted, all transitive 
 						dependencies are included -->
@@ -126,7 +126,7 @@
 						<!-- default values -->
 						<!--inputTemplateResourcePath>${project.basedir}</inputTemplateResourcePath -->
 						<!--inputTemplate>src/main/jnlp/template.vm</inputTemplate --> <!-- relative to inputTemplateResourcePath -->
-						<outputFile>yuploader.jnlp</outputFile> <!-- defaults to launch.jnlp -->
+<!-- 						<outputFile>yuploader.jnlp</outputFile> defaults to launch.jnlp -->
 						<!-- used to automatically identify the jar containing the main class. -->
 						<!-- this is perhaps going to change -->
 						<mainClass>yuown.yuploader.ui.YuploaderApp</mainClass>
@@ -156,9 +156,8 @@
 						</keystoreConfig>
 					</sign>
 					<!-- BUILDING PROCESS -->
-					<!-- <pack200>true</pack200> -->
-					<!-- <gzip>true</gzip> default force when pack200 false, true when pack200 
-						selected ?? -->
+<!-- 					<pack200>true</pack200> -->
+<!--  					<gzip>true</gzip> default force when pack200 false, true when pack200  selected ?? -->
 					<!-- causes a version attribute to be output in each jar resource element, 
 						optional, default is false -->
 					<outputJarVersions>true</outputJarVersions>

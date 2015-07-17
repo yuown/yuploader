@@ -1,11 +1,28 @@
 package yuown.yuploader.ui;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.jdbc.CannotGetJdbcConnectionException;
+import org.springframework.jdbc.core.JdbcTemplate;
+
+import yuown.yuploader.extract.ConfigMapper;
+import yuown.yuploader.extract.UserMapper;
+import yuown.yuploader.model.Config;
+import yuown.yuploader.model.User;
+import yuown.yuploader.util.Helper;
+import yuown.yuploader.util.YuownUtils;
+
 import java.awt.Desktop;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -27,21 +44,6 @@ import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.jdbc.CannotGetJdbcConnectionException;
-import org.springframework.jdbc.core.JdbcTemplate;
-
-import yuown.yuploader.extract.ConfigMapper;
-import yuown.yuploader.extract.UserMapper;
-import yuown.yuploader.model.Config;
-import yuown.yuploader.model.User;
-import yuown.yuploader.util.Helper;
-import yuown.yuploader.util.YuownUtils;
 
 public class YuploaderApp extends JDialog {
 
@@ -80,6 +82,8 @@ public class YuploaderApp extends JDialog {
 	 */
 	public static void main(String[] args) {
 		try {
+		    PrintStream out = new PrintStream(new FileOutputStream("yuploader.log"));
+		    System.setOut(out);
 			YuploaderApp dialog = new YuploaderApp();
 			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 			dialog.setVisible(true);
@@ -363,7 +367,13 @@ public class YuploaderApp extends JDialog {
 				e.printStackTrace();
 			}
 		}
-		getFTPConfiguration();
+		try {
+		    getFTPConfiguration();
+        } catch (Exception e) {
+            System.out.println("Check your Internet Connection and Start the Application Again!");
+            helper.alert(this, "Check your Internet Connection and Start the Application Again!");
+            System.exit(0);
+        }
 	}
 
 	private void alertNewVersion() {
